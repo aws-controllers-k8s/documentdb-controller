@@ -1,0 +1,8 @@
+service:
+  full_name: Amazon DocumentDB
+  short_name: DocumentDB
+  link: https://aws.amazon.com/documentdb/
+  documentation: https://aws.amazon.com/documentdb/resources/
+api_versions:
+  - api_version: v1alpha1
+    status: available
