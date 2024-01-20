@@ -1,0 +1,17 @@
+ignore:
+  resource_names:
+      - DBCluster
+      - DBClusterParameterGroup
+      - DBClusterSnapshot
+      - DBInstance
+      - DBSubnetGroup
+      - EventSubscription
+      - GlobalCluster
+controller_name: documentdb
+sdk_names:
+  model_name: docdb
+resources:
+  DBCluster:
+    fields:
+      DBClusterIdentifier:
+        is_primary_key: true
