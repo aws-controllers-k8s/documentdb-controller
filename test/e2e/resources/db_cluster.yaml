@@ -1,0 +1,12 @@
+apiVersion: documentdb.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: $DB_CLUSTER_ID
+spec:
+  engine: docdb
+  dbClusterIdentifier: $DB_CLUSTER_ID
+  masterUsername: $MASTER_USER_NAME
+  masterUserPassword:
+    namespace: $MASTER_USER_PASS_SECRET_NAMESPACE
+    name: $MASTER_USER_PASS_SECRET_NAME
+    key: $MASTER_USER_PASS_SECRET_KEY

@@ -38,6 +38,8 @@ import (
 	svcresource "github.com/aws-controllers-k8s/documentdb-controller/pkg/resource"
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
 
+	_ "github.com/aws-controllers-k8s/documentdb-controller/pkg/resource/db_cluster"
+
 	"github.com/aws-controllers-k8s/documentdb-controller/pkg/version"
 )
 

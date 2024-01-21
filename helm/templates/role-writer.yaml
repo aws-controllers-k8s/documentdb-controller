@@ -9,6 +9,7 @@ rules:
 - apiGroups:
   - documentdb.services.k8s.aws
   resources:
+  - dbclusters
   verbs:
   - create
   - delete
@@ -20,6 +21,7 @@ rules:
 - apiGroups:
   - documentdb.services.k8s.aws
   resources:
+  - dbclusters
   verbs:
   - get
   - patch

@@ -1,6 +1,6 @@
 ignore:
   resource_names:
-      - DBCluster
+      # DBCluster
       - DBClusterParameterGroup
       - DBClusterSnapshot
       - DBInstance
@@ -10,8 +10,34 @@ ignore:
 controller_name: documentdb
 sdk_names:
   model_name: docdb
+operations:
+  DeleteDBCluster:
+    override_values:
+      # Clearly this is not ideal, but will suffice until we add custom hook
+      # points to the build_request methods to enable a genmeration of the
+      # final snapshot identifier to use.
+      SkipFinalSnapshot: true
 resources:
   DBCluster:
     fields:
       DBClusterIdentifier:
         is_primary_key: true
+      MasterUserPassword:
+        is_secret: true
+    hooks:
+      sdk_create_post_set_output:
+        template_path: hooks/db_cluster/sdk_create_post_set_output.go.tpl
+      sdk_read_many_post_set_output:
+        template_path: hooks/db_cluster/sdk_read_many_post_set_output.go.tpl
+      sdk_delete_pre_build_request:
+        template_path: hooks/db_cluster/sdk_delete_pre_build_request.go.tpl
+    exceptions:
+      terminal_codes:
+        - DBClusterQuotaExceededFault
+        - DBSubnetGroupDoesNotCoverEnoughAZs
+        - InsufficientStorageClusterCapacity
+        - InvalidParameter
+        - InvalidParameterValue
+        - InvalidParameterCombination
+        - InvalidSubnet
+        - StorageQuotaExceeded
