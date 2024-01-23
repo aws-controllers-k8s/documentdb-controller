@@ -1,0 +1,10 @@
+apiVersion: documentdb.services.k8s.aws/v1alpha1
+kind: DBCluster
+metadata:
+  name: mycluster
+  namespace: prod
+spec:
+  dbClusterIdentifier: mycluster
+  engine: docdb
+  masterUsername: ackuser
+  masterUserPassword: ackpassword

@@ -47,6 +47,26 @@ rules:
   - patch
   - watch
 - apiGroups:
+  - documentdb.services.k8s.aws
+  resources:
+  - dbclusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - documentdb.services.k8s.aws
+  resources:
+  - dbclusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - services.k8s.aws
   resources:
   - adoptedresources
