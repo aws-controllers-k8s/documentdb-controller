@@ -42,6 +42,7 @@ func newResourceDelta(
 		delta.Add("", a, b)
 		return delta
 	}
+	compareTags(delta, a, b)
 
 	if len(a.ko.Spec.AvailabilityZones) != len(b.ko.Spec.AvailabilityZones) {
 		delta.Add("Spec.AvailabilityZones", a.ko.Spec.AvailabilityZones, b.ko.Spec.AvailabilityZones)
@@ -127,6 +128,9 @@ func newResourceDelta(
 			delta.Add("Spec.KMSKeyID", a.ko.Spec.KMSKeyID, b.ko.Spec.KMSKeyID)
 		}
 	}
+	if !reflect.DeepEqual(a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef) {
+		delta.Add("Spec.KMSKeyRef", a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef)
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.MasterUserPassword, b.ko.Spec.MasterUserPassword) {
 		delta.Add("Spec.MasterUserPassword", a.ko.Spec.MasterUserPassword, b.ko.Spec.MasterUserPassword)
 	} else if a.ko.Spec.MasterUserPassword != nil && b.ko.Spec.MasterUserPassword != nil {
@@ -169,6 +173,13 @@ func newResourceDelta(
 			delta.Add("Spec.PreferredMaintenanceWindow", a.ko.Spec.PreferredMaintenanceWindow, b.ko.Spec.PreferredMaintenanceWindow)
 		}
 	}
+	if ackcompare.HasNilDifference(a.ko.Spec.SnapshotIdentifier, b.ko.Spec.SnapshotIdentifier) {
+		delta.Add("Spec.SnapshotIdentifier", a.ko.Spec.SnapshotIdentifier, b.ko.Spec.SnapshotIdentifier)
+	} else if a.ko.Spec.SnapshotIdentifier != nil && b.ko.Spec.SnapshotIdentifier != nil {
+		if *a.ko.Spec.SnapshotIdentifier != *b.ko.Spec.SnapshotIdentifier {
+			delta.Add("Spec.SnapshotIdentifier", a.ko.Spec.SnapshotIdentifier, b.ko.Spec.SnapshotIdentifier)
+		}
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.SourceRegion, b.ko.Spec.SourceRegion) {
 		delta.Add("Spec.SourceRegion", a.ko.Spec.SourceRegion, b.ko.Spec.SourceRegion)
 	} else if a.ko.Spec.SourceRegion != nil && b.ko.Spec.SourceRegion != nil {
@@ -190,15 +201,15 @@ func newResourceDelta(
 			delta.Add("Spec.StorageType", a.ko.Spec.StorageType, b.ko.Spec.StorageType)
 		}
 	}
-	if !ackcompare.MapStringStringEqual(ToACKTags(a.ko.Spec.Tags), ToACKTags(b.ko.Spec.Tags)) {
-		delta.Add("Spec.Tags", a.ko.Spec.Tags, b.ko.Spec.Tags)
-	}
 	if len(a.ko.Spec.VPCSecurityGroupIDs) != len(b.ko.Spec.VPCSecurityGroupIDs) {
 		delta.Add("Spec.VPCSecurityGroupIDs", a.ko.Spec.VPCSecurityGroupIDs, b.ko.Spec.VPCSecurityGroupIDs)
 	} else if len(a.ko.Spec.VPCSecurityGroupIDs) > 0 {
 		if !ackcompare.SliceStringPEqual(a.ko.Spec.VPCSecurityGroupIDs, b.ko.Spec.VPCSecurityGroupIDs) {
 			delta.Add("Spec.VPCSecurityGroupIDs", a.ko.Spec.VPCSecurityGroupIDs, b.ko.Spec.VPCSecurityGroupIDs)
 		}
+	}
+	if !reflect.DeepEqual(a.ko.Spec.VPCSecurityGroupRefs, b.ko.Spec.VPCSecurityGroupRefs) {
+		delta.Add("Spec.VPCSecurityGroupRefs", a.ko.Spec.VPCSecurityGroupRefs, b.ko.Spec.VPCSecurityGroupRefs)
 	}
 
 	return delta

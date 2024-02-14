@@ -320,6 +320,31 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
+	if ko.Status.ACKResourceMetadata != nil && ko.Status.ACKResourceMetadata.ARN != nil {
+		resourceARN := (*string)(ko.Status.ACKResourceMetadata.ARN)
+		tags, err := rm.getTags(ctx, *resourceARN)
+		if err != nil {
+			return nil, err
+		}
+		ko.Spec.Tags = tags
+	}
+	if len(r.ko.Spec.VPCSecurityGroupIDs) > 0 {
+		// If the desired resource has security groups specified then update the spec of the latest resource with the
+		// value from the status. This is done so that when a cluster is created without security groups and gets a
+		// default security group attached to it, it is not overwritten with empty security groups from the
+		// desired resource.
+		sgIDs := make([]*string, len(ko.Status.VPCSecurityGroups))
+		for i, sg := range ko.Status.VPCSecurityGroups {
+			id := *sg.VPCSecurityGroupID
+			sgIDs[i] = &id
+		}
+		ko.Spec.VPCSecurityGroupIDs = sgIDs
+	}
+	if r.ko.Spec.DBClusterParameterGroupName != nil {
+		// If the desired resource has db cluster parameter group name specified then update the spec of the latest
+		// resource with the value from the status.
+		ko.Spec.DBClusterParameterGroupName = ko.Status.DBClusterParameterGroup
+	}
 	if !clusterAvailable(&resource{ko}) {
 		// Setting resource synced condition to false will trigger a requeue of
 		// the resource. No need to return a requeue error here.
@@ -365,6 +390,12 @@ func (rm *resourceManager) sdkCreate(
 	defer func() {
 		exit(err)
 	}()
+	// if request has SnapshotIdentifier spec, create request will call RestoreDBClusterFromSnapshotWithContext
+	// instead of normal create api
+	if desired.ko.Spec.SnapshotIdentifier != nil {
+		return rm.restoreDbClusterFromSnapshot(ctx, desired)
+	}
+
 	input, err := rm.newCreateRequestPayload(ctx, desired)
 	if err != nil {
 		return nil, err
@@ -743,313 +774,8 @@ func (rm *resourceManager) sdkUpdate(
 	desired *resource,
 	latest *resource,
 	delta *ackcompare.Delta,
-) (updated *resource, err error) {
-	rlog := ackrtlog.FromContext(ctx)
-	exit := rlog.Trace("rm.sdkUpdate")
-	defer func() {
-		exit(err)
-	}()
-	input, err := rm.newUpdateRequestPayload(ctx, desired, delta)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp *svcsdk.ModifyDBClusterOutput
-	_ = resp
-	resp, err = rm.sdkapi.ModifyDBClusterWithContext(ctx, input)
-	rm.metrics.RecordAPICall("UPDATE", "ModifyDBCluster", err)
-	if err != nil {
-		return nil, err
-	}
-	// Merge in the information we read from the API call above to the copy of
-	// the original Kubernetes object we passed to the function
-	ko := desired.ko.DeepCopy()
-
-	if resp.DBCluster.AssociatedRoles != nil {
-		f0 := []*svcapitypes.DBClusterRole{}
-		for _, f0iter := range resp.DBCluster.AssociatedRoles {
-			f0elem := &svcapitypes.DBClusterRole{}
-			if f0iter.RoleArn != nil {
-				f0elem.RoleARN = f0iter.RoleArn
-			}
-			if f0iter.Status != nil {
-				f0elem.Status = f0iter.Status
-			}
-			f0 = append(f0, f0elem)
-		}
-		ko.Status.AssociatedRoles = f0
-	} else {
-		ko.Status.AssociatedRoles = nil
-	}
-	if resp.DBCluster.AvailabilityZones != nil {
-		f1 := []*string{}
-		for _, f1iter := range resp.DBCluster.AvailabilityZones {
-			var f1elem string
-			f1elem = *f1iter
-			f1 = append(f1, &f1elem)
-		}
-		ko.Spec.AvailabilityZones = f1
-	} else {
-		ko.Spec.AvailabilityZones = nil
-	}
-	if resp.DBCluster.BackupRetentionPeriod != nil {
-		ko.Spec.BackupRetentionPeriod = resp.DBCluster.BackupRetentionPeriod
-	} else {
-		ko.Spec.BackupRetentionPeriod = nil
-	}
-	if resp.DBCluster.CloneGroupId != nil {
-		ko.Status.CloneGroupID = resp.DBCluster.CloneGroupId
-	} else {
-		ko.Status.CloneGroupID = nil
-	}
-	if resp.DBCluster.ClusterCreateTime != nil {
-		ko.Status.ClusterCreateTime = &metav1.Time{*resp.DBCluster.ClusterCreateTime}
-	} else {
-		ko.Status.ClusterCreateTime = nil
-	}
-	if ko.Status.ACKResourceMetadata == nil {
-		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
-	}
-	if resp.DBCluster.DBClusterArn != nil {
-		arn := ackv1alpha1.AWSResourceName(*resp.DBCluster.DBClusterArn)
-		ko.Status.ACKResourceMetadata.ARN = &arn
-	}
-	if resp.DBCluster.DBClusterIdentifier != nil {
-		ko.Spec.DBClusterIdentifier = resp.DBCluster.DBClusterIdentifier
-	} else {
-		ko.Spec.DBClusterIdentifier = nil
-	}
-	if resp.DBCluster.DBClusterMembers != nil {
-		f7 := []*svcapitypes.DBClusterMember{}
-		for _, f7iter := range resp.DBCluster.DBClusterMembers {
-			f7elem := &svcapitypes.DBClusterMember{}
-			if f7iter.DBClusterParameterGroupStatus != nil {
-				f7elem.DBClusterParameterGroupStatus = f7iter.DBClusterParameterGroupStatus
-			}
-			if f7iter.DBInstanceIdentifier != nil {
-				f7elem.DBInstanceIdentifier = f7iter.DBInstanceIdentifier
-			}
-			if f7iter.IsClusterWriter != nil {
-				f7elem.IsClusterWriter = f7iter.IsClusterWriter
-			}
-			if f7iter.PromotionTier != nil {
-				f7elem.PromotionTier = f7iter.PromotionTier
-			}
-			f7 = append(f7, f7elem)
-		}
-		ko.Status.DBClusterMembers = f7
-	} else {
-		ko.Status.DBClusterMembers = nil
-	}
-	if resp.DBCluster.DBClusterParameterGroup != nil {
-		ko.Status.DBClusterParameterGroup = resp.DBCluster.DBClusterParameterGroup
-	} else {
-		ko.Status.DBClusterParameterGroup = nil
-	}
-	if resp.DBCluster.DBSubnetGroup != nil {
-		ko.Status.DBSubnetGroup = resp.DBCluster.DBSubnetGroup
-	} else {
-		ko.Status.DBSubnetGroup = nil
-	}
-	if resp.DBCluster.DbClusterResourceId != nil {
-		ko.Status.DBClusterResourceID = resp.DBCluster.DbClusterResourceId
-	} else {
-		ko.Status.DBClusterResourceID = nil
-	}
-	if resp.DBCluster.DeletionProtection != nil {
-		ko.Spec.DeletionProtection = resp.DBCluster.DeletionProtection
-	} else {
-		ko.Spec.DeletionProtection = nil
-	}
-	if resp.DBCluster.EarliestRestorableTime != nil {
-		ko.Status.EarliestRestorableTime = &metav1.Time{*resp.DBCluster.EarliestRestorableTime}
-	} else {
-		ko.Status.EarliestRestorableTime = nil
-	}
-	if resp.DBCluster.EnabledCloudwatchLogsExports != nil {
-		f13 := []*string{}
-		for _, f13iter := range resp.DBCluster.EnabledCloudwatchLogsExports {
-			var f13elem string
-			f13elem = *f13iter
-			f13 = append(f13, &f13elem)
-		}
-		ko.Status.EnabledCloudwatchLogsExports = f13
-	} else {
-		ko.Status.EnabledCloudwatchLogsExports = nil
-	}
-	if resp.DBCluster.Endpoint != nil {
-		ko.Status.Endpoint = resp.DBCluster.Endpoint
-	} else {
-		ko.Status.Endpoint = nil
-	}
-	if resp.DBCluster.Engine != nil {
-		ko.Spec.Engine = resp.DBCluster.Engine
-	} else {
-		ko.Spec.Engine = nil
-	}
-	if resp.DBCluster.EngineVersion != nil {
-		ko.Spec.EngineVersion = resp.DBCluster.EngineVersion
-	} else {
-		ko.Spec.EngineVersion = nil
-	}
-	if resp.DBCluster.HostedZoneId != nil {
-		ko.Status.HostedZoneID = resp.DBCluster.HostedZoneId
-	} else {
-		ko.Status.HostedZoneID = nil
-	}
-	if resp.DBCluster.KmsKeyId != nil {
-		ko.Spec.KMSKeyID = resp.DBCluster.KmsKeyId
-	} else {
-		ko.Spec.KMSKeyID = nil
-	}
-	if resp.DBCluster.LatestRestorableTime != nil {
-		ko.Status.LatestRestorableTime = &metav1.Time{*resp.DBCluster.LatestRestorableTime}
-	} else {
-		ko.Status.LatestRestorableTime = nil
-	}
-	if resp.DBCluster.MasterUsername != nil {
-		ko.Spec.MasterUsername = resp.DBCluster.MasterUsername
-	} else {
-		ko.Spec.MasterUsername = nil
-	}
-	if resp.DBCluster.MultiAZ != nil {
-		ko.Status.MultiAZ = resp.DBCluster.MultiAZ
-	} else {
-		ko.Status.MultiAZ = nil
-	}
-	if resp.DBCluster.PercentProgress != nil {
-		ko.Status.PercentProgress = resp.DBCluster.PercentProgress
-	} else {
-		ko.Status.PercentProgress = nil
-	}
-	if resp.DBCluster.Port != nil {
-		ko.Spec.Port = resp.DBCluster.Port
-	} else {
-		ko.Spec.Port = nil
-	}
-	if resp.DBCluster.PreferredBackupWindow != nil {
-		ko.Spec.PreferredBackupWindow = resp.DBCluster.PreferredBackupWindow
-	} else {
-		ko.Spec.PreferredBackupWindow = nil
-	}
-	if resp.DBCluster.PreferredMaintenanceWindow != nil {
-		ko.Spec.PreferredMaintenanceWindow = resp.DBCluster.PreferredMaintenanceWindow
-	} else {
-		ko.Spec.PreferredMaintenanceWindow = nil
-	}
-	if resp.DBCluster.ReadReplicaIdentifiers != nil {
-		f26 := []*string{}
-		for _, f26iter := range resp.DBCluster.ReadReplicaIdentifiers {
-			var f26elem string
-			f26elem = *f26iter
-			f26 = append(f26, &f26elem)
-		}
-		ko.Status.ReadReplicaIdentifiers = f26
-	} else {
-		ko.Status.ReadReplicaIdentifiers = nil
-	}
-	if resp.DBCluster.ReaderEndpoint != nil {
-		ko.Status.ReaderEndpoint = resp.DBCluster.ReaderEndpoint
-	} else {
-		ko.Status.ReaderEndpoint = nil
-	}
-	if resp.DBCluster.ReplicationSourceIdentifier != nil {
-		ko.Status.ReplicationSourceIdentifier = resp.DBCluster.ReplicationSourceIdentifier
-	} else {
-		ko.Status.ReplicationSourceIdentifier = nil
-	}
-	if resp.DBCluster.Status != nil {
-		ko.Status.Status = resp.DBCluster.Status
-	} else {
-		ko.Status.Status = nil
-	}
-	if resp.DBCluster.StorageEncrypted != nil {
-		ko.Spec.StorageEncrypted = resp.DBCluster.StorageEncrypted
-	} else {
-		ko.Spec.StorageEncrypted = nil
-	}
-	if resp.DBCluster.StorageType != nil {
-		ko.Spec.StorageType = resp.DBCluster.StorageType
-	} else {
-		ko.Spec.StorageType = nil
-	}
-	if resp.DBCluster.VpcSecurityGroups != nil {
-		f32 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f32iter := range resp.DBCluster.VpcSecurityGroups {
-			f32elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f32iter.Status != nil {
-				f32elem.Status = f32iter.Status
-			}
-			if f32iter.VpcSecurityGroupId != nil {
-				f32elem.VPCSecurityGroupID = f32iter.VpcSecurityGroupId
-			}
-			f32 = append(f32, f32elem)
-		}
-		ko.Status.VPCSecurityGroups = f32
-	} else {
-		ko.Status.VPCSecurityGroups = nil
-	}
-
-	rm.setStatusDefaults(ko)
-	return &resource{ko}, nil
-}
-
-// newUpdateRequestPayload returns an SDK-specific struct for the HTTP request
-// payload of the Update API call for the resource
-func (rm *resourceManager) newUpdateRequestPayload(
-	ctx context.Context,
-	r *resource,
-	delta *ackcompare.Delta,
-) (*svcsdk.ModifyDBClusterInput, error) {
-	res := &svcsdk.ModifyDBClusterInput{}
-
-	if r.ko.Spec.BackupRetentionPeriod != nil {
-		res.SetBackupRetentionPeriod(*r.ko.Spec.BackupRetentionPeriod)
-	}
-	if r.ko.Spec.DBClusterIdentifier != nil {
-		res.SetDBClusterIdentifier(*r.ko.Spec.DBClusterIdentifier)
-	}
-	if r.ko.Spec.DBClusterParameterGroupName != nil {
-		res.SetDBClusterParameterGroupName(*r.ko.Spec.DBClusterParameterGroupName)
-	}
-	if r.ko.Spec.DeletionProtection != nil {
-		res.SetDeletionProtection(*r.ko.Spec.DeletionProtection)
-	}
-	if r.ko.Spec.EngineVersion != nil {
-		res.SetEngineVersion(*r.ko.Spec.EngineVersion)
-	}
-	if r.ko.Spec.MasterUserPassword != nil {
-		tmpSecret, err := rm.rr.SecretValueFromReference(ctx, r.ko.Spec.MasterUserPassword)
-		if err != nil {
-			return nil, ackrequeue.Needed(err)
-		}
-		if tmpSecret != "" {
-			res.SetMasterUserPassword(tmpSecret)
-		}
-	}
-	if r.ko.Spec.Port != nil {
-		res.SetPort(*r.ko.Spec.Port)
-	}
-	if r.ko.Spec.PreferredBackupWindow != nil {
-		res.SetPreferredBackupWindow(*r.ko.Spec.PreferredBackupWindow)
-	}
-	if r.ko.Spec.PreferredMaintenanceWindow != nil {
-		res.SetPreferredMaintenanceWindow(*r.ko.Spec.PreferredMaintenanceWindow)
-	}
-	if r.ko.Spec.StorageType != nil {
-		res.SetStorageType(*r.ko.Spec.StorageType)
-	}
-	if r.ko.Spec.VPCSecurityGroupIDs != nil {
-		f14 := []*string{}
-		for _, f14iter := range r.ko.Spec.VPCSecurityGroupIDs {
-			var f14elem string
-			f14elem = *f14iter
-			f14 = append(f14, &f14elem)
-		}
-		res.SetVpcSecurityGroupIds(f14)
-	}
-
-	return res, nil
+) (*resource, error) {
+	return rm.customUpdate(ctx, desired, latest, delta)
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API
@@ -1211,4 +937,320 @@ func (rm *resourceManager) terminalAWSError(err error) bool {
 	default:
 		return false
 	}
+}
+
+// newRestoreDBClusterFromSnapshotInput returns a RestoreDBClusterFromSnapshotInput object
+// with each the field set by the corresponding configuration's fields.
+func (rm *resourceManager) newRestoreDBClusterFromSnapshotInput(
+	r *resource,
+) *svcsdk.RestoreDBClusterFromSnapshotInput {
+	res := &svcsdk.RestoreDBClusterFromSnapshotInput{}
+
+	if r.ko.Spec.AvailabilityZones != nil {
+		resf0 := []*string{}
+		for _, resf0iter := range r.ko.Spec.AvailabilityZones {
+			var resf0elem string
+			resf0elem = *resf0iter
+			resf0 = append(resf0, &resf0elem)
+		}
+		res.SetAvailabilityZones(resf0)
+	}
+	if r.ko.Spec.DBClusterIdentifier != nil {
+		res.SetDBClusterIdentifier(*r.ko.Spec.DBClusterIdentifier)
+	}
+	if r.ko.Spec.DBClusterParameterGroupName != nil {
+		res.SetDBClusterParameterGroupName(*r.ko.Spec.DBClusterParameterGroupName)
+	}
+	if r.ko.Spec.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*r.ko.Spec.DBSubnetGroupName)
+	}
+	if r.ko.Spec.DeletionProtection != nil {
+		res.SetDeletionProtection(*r.ko.Spec.DeletionProtection)
+	}
+	if r.ko.Spec.EnableCloudwatchLogsExports != nil {
+		resf5 := []*string{}
+		for _, resf5iter := range r.ko.Spec.EnableCloudwatchLogsExports {
+			var resf5elem string
+			resf5elem = *resf5iter
+			resf5 = append(resf5, &resf5elem)
+		}
+		res.SetEnableCloudwatchLogsExports(resf5)
+	}
+	if r.ko.Spec.Engine != nil {
+		res.SetEngine(*r.ko.Spec.Engine)
+	}
+	if r.ko.Spec.EngineVersion != nil {
+		res.SetEngineVersion(*r.ko.Spec.EngineVersion)
+	}
+	if r.ko.Spec.KMSKeyID != nil {
+		res.SetKmsKeyId(*r.ko.Spec.KMSKeyID)
+	}
+	if r.ko.Spec.Port != nil {
+		res.SetPort(*r.ko.Spec.Port)
+	}
+	if r.ko.Spec.SnapshotIdentifier != nil {
+		res.SetSnapshotIdentifier(*r.ko.Spec.SnapshotIdentifier)
+	}
+	if r.ko.Spec.StorageType != nil {
+		res.SetStorageType(*r.ko.Spec.StorageType)
+	}
+	if r.ko.Spec.Tags != nil {
+		resf12 := []*svcsdk.Tag{}
+		for _, resf12iter := range r.ko.Spec.Tags {
+			resf12elem := &svcsdk.Tag{}
+			if resf12iter.Key != nil {
+				resf12elem.SetKey(*resf12iter.Key)
+			}
+			if resf12iter.Value != nil {
+				resf12elem.SetValue(*resf12iter.Value)
+			}
+			resf12 = append(resf12, resf12elem)
+		}
+		res.SetTags(resf12)
+	}
+	if r.ko.Spec.VPCSecurityGroupIDs != nil {
+		resf13 := []*string{}
+		for _, resf13iter := range r.ko.Spec.VPCSecurityGroupIDs {
+			var resf13elem string
+			resf13elem = *resf13iter
+			resf13 = append(resf13, &resf13elem)
+		}
+		res.SetVpcSecurityGroupIds(resf13)
+	}
+
+	return res
+}
+
+// setResourceFromRestoreDBClusterFromSnapshotOutput sets a resource RestoreDBClusterFromSnapshotOutput type
+// given the SDK type.
+func (rm *resourceManager) setResourceFromRestoreDBClusterFromSnapshotOutput(
+	r *resource,
+	resp *svcsdk.RestoreDBClusterFromSnapshotOutput,
+) {
+
+	if resp.DBCluster.AssociatedRoles != nil {
+		f0 := []*svcapitypes.DBClusterRole{}
+		for _, f0iter := range resp.DBCluster.AssociatedRoles {
+			f0elem := &svcapitypes.DBClusterRole{}
+			if f0iter.RoleArn != nil {
+				f0elem.RoleARN = f0iter.RoleArn
+			}
+			if f0iter.Status != nil {
+				f0elem.Status = f0iter.Status
+			}
+			f0 = append(f0, f0elem)
+		}
+		r.ko.Status.AssociatedRoles = f0
+	} else {
+		r.ko.Status.AssociatedRoles = nil
+	}
+	if resp.DBCluster.AvailabilityZones != nil {
+		f1 := []*string{}
+		for _, f1iter := range resp.DBCluster.AvailabilityZones {
+			var f1elem string
+			f1elem = *f1iter
+			f1 = append(f1, &f1elem)
+		}
+		r.ko.Spec.AvailabilityZones = f1
+	} else {
+		r.ko.Spec.AvailabilityZones = nil
+	}
+	if resp.DBCluster.BackupRetentionPeriod != nil {
+		r.ko.Spec.BackupRetentionPeriod = resp.DBCluster.BackupRetentionPeriod
+	} else {
+		r.ko.Spec.BackupRetentionPeriod = nil
+	}
+	if resp.DBCluster.CloneGroupId != nil {
+		r.ko.Status.CloneGroupID = resp.DBCluster.CloneGroupId
+	} else {
+		r.ko.Status.CloneGroupID = nil
+	}
+	if resp.DBCluster.ClusterCreateTime != nil {
+		r.ko.Status.ClusterCreateTime = &metav1.Time{*resp.DBCluster.ClusterCreateTime}
+	} else {
+		r.ko.Status.ClusterCreateTime = nil
+	}
+	if r.ko.Status.ACKResourceMetadata == nil {
+		r.ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
+	if resp.DBCluster.DBClusterArn != nil {
+		arn := ackv1alpha1.AWSResourceName(*resp.DBCluster.DBClusterArn)
+		r.ko.Status.ACKResourceMetadata.ARN = &arn
+	}
+	if resp.DBCluster.DBClusterIdentifier != nil {
+		r.ko.Spec.DBClusterIdentifier = resp.DBCluster.DBClusterIdentifier
+	} else {
+		r.ko.Spec.DBClusterIdentifier = nil
+	}
+	if resp.DBCluster.DBClusterMembers != nil {
+		f7 := []*svcapitypes.DBClusterMember{}
+		for _, f7iter := range resp.DBCluster.DBClusterMembers {
+			f7elem := &svcapitypes.DBClusterMember{}
+			if f7iter.DBClusterParameterGroupStatus != nil {
+				f7elem.DBClusterParameterGroupStatus = f7iter.DBClusterParameterGroupStatus
+			}
+			if f7iter.DBInstanceIdentifier != nil {
+				f7elem.DBInstanceIdentifier = f7iter.DBInstanceIdentifier
+			}
+			if f7iter.IsClusterWriter != nil {
+				f7elem.IsClusterWriter = f7iter.IsClusterWriter
+			}
+			if f7iter.PromotionTier != nil {
+				f7elem.PromotionTier = f7iter.PromotionTier
+			}
+			f7 = append(f7, f7elem)
+		}
+		r.ko.Status.DBClusterMembers = f7
+	} else {
+		r.ko.Status.DBClusterMembers = nil
+	}
+	if resp.DBCluster.DBClusterParameterGroup != nil {
+		r.ko.Status.DBClusterParameterGroup = resp.DBCluster.DBClusterParameterGroup
+	} else {
+		r.ko.Status.DBClusterParameterGroup = nil
+	}
+	if resp.DBCluster.DBSubnetGroup != nil {
+		r.ko.Status.DBSubnetGroup = resp.DBCluster.DBSubnetGroup
+	} else {
+		r.ko.Status.DBSubnetGroup = nil
+	}
+	if resp.DBCluster.DbClusterResourceId != nil {
+		r.ko.Status.DBClusterResourceID = resp.DBCluster.DbClusterResourceId
+	} else {
+		r.ko.Status.DBClusterResourceID = nil
+	}
+	if resp.DBCluster.DeletionProtection != nil {
+		r.ko.Spec.DeletionProtection = resp.DBCluster.DeletionProtection
+	} else {
+		r.ko.Spec.DeletionProtection = nil
+	}
+	if resp.DBCluster.EarliestRestorableTime != nil {
+		r.ko.Status.EarliestRestorableTime = &metav1.Time{*resp.DBCluster.EarliestRestorableTime}
+	} else {
+		r.ko.Status.EarliestRestorableTime = nil
+	}
+	if resp.DBCluster.EnabledCloudwatchLogsExports != nil {
+		f13 := []*string{}
+		for _, f13iter := range resp.DBCluster.EnabledCloudwatchLogsExports {
+			var f13elem string
+			f13elem = *f13iter
+			f13 = append(f13, &f13elem)
+		}
+		r.ko.Status.EnabledCloudwatchLogsExports = f13
+	} else {
+		r.ko.Status.EnabledCloudwatchLogsExports = nil
+	}
+	if resp.DBCluster.Endpoint != nil {
+		r.ko.Status.Endpoint = resp.DBCluster.Endpoint
+	} else {
+		r.ko.Status.Endpoint = nil
+	}
+	if resp.DBCluster.Engine != nil {
+		r.ko.Spec.Engine = resp.DBCluster.Engine
+	} else {
+		r.ko.Spec.Engine = nil
+	}
+	if resp.DBCluster.EngineVersion != nil {
+		r.ko.Spec.EngineVersion = resp.DBCluster.EngineVersion
+	} else {
+		r.ko.Spec.EngineVersion = nil
+	}
+	if resp.DBCluster.HostedZoneId != nil {
+		r.ko.Status.HostedZoneID = resp.DBCluster.HostedZoneId
+	} else {
+		r.ko.Status.HostedZoneID = nil
+	}
+	if resp.DBCluster.KmsKeyId != nil {
+		r.ko.Spec.KMSKeyID = resp.DBCluster.KmsKeyId
+	} else {
+		r.ko.Spec.KMSKeyID = nil
+	}
+	if resp.DBCluster.LatestRestorableTime != nil {
+		r.ko.Status.LatestRestorableTime = &metav1.Time{*resp.DBCluster.LatestRestorableTime}
+	} else {
+		r.ko.Status.LatestRestorableTime = nil
+	}
+	if resp.DBCluster.MasterUsername != nil {
+		r.ko.Spec.MasterUsername = resp.DBCluster.MasterUsername
+	} else {
+		r.ko.Spec.MasterUsername = nil
+	}
+	if resp.DBCluster.MultiAZ != nil {
+		r.ko.Status.MultiAZ = resp.DBCluster.MultiAZ
+	} else {
+		r.ko.Status.MultiAZ = nil
+	}
+	if resp.DBCluster.PercentProgress != nil {
+		r.ko.Status.PercentProgress = resp.DBCluster.PercentProgress
+	} else {
+		r.ko.Status.PercentProgress = nil
+	}
+	if resp.DBCluster.Port != nil {
+		r.ko.Spec.Port = resp.DBCluster.Port
+	} else {
+		r.ko.Spec.Port = nil
+	}
+	if resp.DBCluster.PreferredBackupWindow != nil {
+		r.ko.Spec.PreferredBackupWindow = resp.DBCluster.PreferredBackupWindow
+	} else {
+		r.ko.Spec.PreferredBackupWindow = nil
+	}
+	if resp.DBCluster.PreferredMaintenanceWindow != nil {
+		r.ko.Spec.PreferredMaintenanceWindow = resp.DBCluster.PreferredMaintenanceWindow
+	} else {
+		r.ko.Spec.PreferredMaintenanceWindow = nil
+	}
+	if resp.DBCluster.ReadReplicaIdentifiers != nil {
+		f26 := []*string{}
+		for _, f26iter := range resp.DBCluster.ReadReplicaIdentifiers {
+			var f26elem string
+			f26elem = *f26iter
+			f26 = append(f26, &f26elem)
+		}
+		r.ko.Status.ReadReplicaIdentifiers = f26
+	} else {
+		r.ko.Status.ReadReplicaIdentifiers = nil
+	}
+	if resp.DBCluster.ReaderEndpoint != nil {
+		r.ko.Status.ReaderEndpoint = resp.DBCluster.ReaderEndpoint
+	} else {
+		r.ko.Status.ReaderEndpoint = nil
+	}
+	if resp.DBCluster.ReplicationSourceIdentifier != nil {
+		r.ko.Status.ReplicationSourceIdentifier = resp.DBCluster.ReplicationSourceIdentifier
+	} else {
+		r.ko.Status.ReplicationSourceIdentifier = nil
+	}
+	if resp.DBCluster.Status != nil {
+		r.ko.Status.Status = resp.DBCluster.Status
+	} else {
+		r.ko.Status.Status = nil
+	}
+	if resp.DBCluster.StorageEncrypted != nil {
+		r.ko.Spec.StorageEncrypted = resp.DBCluster.StorageEncrypted
+	} else {
+		r.ko.Spec.StorageEncrypted = nil
+	}
+	if resp.DBCluster.StorageType != nil {
+		r.ko.Spec.StorageType = resp.DBCluster.StorageType
+	} else {
+		r.ko.Spec.StorageType = nil
+	}
+	if resp.DBCluster.VpcSecurityGroups != nil {
+		f32 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f32iter := range resp.DBCluster.VpcSecurityGroups {
+			f32elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f32iter.Status != nil {
+				f32elem.Status = f32iter.Status
+			}
+			if f32iter.VpcSecurityGroupId != nil {
+				f32elem.VPCSecurityGroupID = f32iter.VpcSecurityGroupId
+			}
+			f32 = append(f32, f32elem)
+		}
+		r.ko.Status.VPCSecurityGroups = f32
+	} else {
+		r.ko.Status.VPCSecurityGroups = nil
+	}
+
 }

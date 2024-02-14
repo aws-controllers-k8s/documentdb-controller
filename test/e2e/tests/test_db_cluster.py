@@ -113,3 +113,48 @@ class TestDBCluster:
         assert 'status' in cr['status']
         assert cr['status']['status'] != 'creating'
         condition.assert_synced(ref)
+
+        latest = db_cluster.get(db_cluster_id)
+        assert latest is not None
+        # We're now going to modify the CopyTagsToSnapshot field of the DB
+        # instance, wait some time and verify that the RDS server-side resource
+        # shows the new value of the field.
+        updates = {
+            "spec": {"preferredBackupWindow": "02:00-02:30"},
+        }
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+
+        latest = db_cluster.get(db_cluster_id)
+        assert latest is not None
+        assert latest['PreferredBackupWindow'] == "02:00-02:30"
+
+        arn = latest['DBClusterArn']
+        expect_tags = [
+            {"Key": "environment", "Value": "dev"}
+        ]
+        latest_tags = tag.clean(db_cluster.get_tags(arn))
+        assert expect_tags == latest_tags
+
+        # OK, now let's update the tag set and check that the tags are
+        # updated accordingly.
+        new_tags = [
+            {
+                "key": "environment",
+                "value": "prod",
+            }
+        ]
+        updates = {
+            "spec": {"tags": new_tags},
+        }
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+
+        latest_tags = tag.clean(db_cluster.get_tags(arn))
+        after_update_expected_tags = [
+            {
+                "Key": "environment",
+                "Value": "prod",
+            }
+        ]
+        assert latest_tags == after_update_expected_tags
