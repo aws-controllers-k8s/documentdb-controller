@@ -98,7 +98,8 @@ type DBClusterSpec struct {
 	// KMS creates the default encryption key for your Amazon Web Services account.
 	// Your Amazon Web Services account has a different default encryption key for
 	// each Amazon Web Services Regions.
-	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	KMSKeyID  *string                                  `json:"kmsKeyID,omitempty"`
+	KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
 	// The password for the master database user. This password can contain any
 	// printable ASCII character except forward slash (/), double quote ("), or
 	// the "at" symbol (@).
@@ -148,6 +149,15 @@ type DBClusterSpec struct {
 	//
 	// Constraints: Minimum 30-minute window.
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
+	// The identifier for the snapshot or cluster snapshot to restore from.
+	//
+	// You can use either the name or the Amazon Resource Name (ARN) to specify
+	// a cluster snapshot. However, you can use only the ARN to specify a snapshot.
+	//
+	// Constraints:
+	//
+	//   - Must match the identifier of an existing snapshot.
+	SnapshotIdentifier *string `json:"snapshotIdentifier,omitempty"`
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
 	// have the same region as the source ARN.
@@ -170,7 +180,8 @@ type DBClusterSpec struct {
 	// The tags to be assigned to the cluster.
 	Tags []*Tag `json:"tags,omitempty"`
 	// A list of EC2 VPC security groups to associate with this cluster.
-	VPCSecurityGroupIDs []*string `json:"vpcSecurityGroupIDs,omitempty"`
+	VPCSecurityGroupIDs  []*string                                  `json:"vpcSecurityGroupIDs,omitempty"`
+	VPCSecurityGroupRefs []*ackv1alpha1.AWSResourceReferenceWrapper `json:"vpcSecurityGroupRefs,omitempty"`
 }
 
 // DBClusterStatus defines the observed state of DBCluster

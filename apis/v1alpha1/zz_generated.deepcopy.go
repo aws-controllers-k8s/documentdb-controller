@@ -517,6 +517,11 @@ func (in *DBClusterSpec) DeepCopyInto(out *DBClusterSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KMSKeyRef != nil {
+		in, out := &in.KMSKeyRef, &out.KMSKeyRef
+		*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.MasterUserPassword != nil {
 		in, out := &in.MasterUserPassword, &out.MasterUserPassword
 		*out = new(corev1alpha1.SecretKeyReference)
@@ -544,6 +549,11 @@ func (in *DBClusterSpec) DeepCopyInto(out *DBClusterSpec) {
 	}
 	if in.PreferredMaintenanceWindow != nil {
 		in, out := &in.PreferredMaintenanceWindow, &out.PreferredMaintenanceWindow
+		*out = new(string)
+		**out = **in
+	}
+	if in.SnapshotIdentifier != nil {
+		in, out := &in.SnapshotIdentifier, &out.SnapshotIdentifier
 		*out = new(string)
 		**out = **in
 	}
@@ -581,6 +591,17 @@ func (in *DBClusterSpec) DeepCopyInto(out *DBClusterSpec) {
 				in, out := &(*in)[i], &(*out)[i]
 				*out = new(string)
 				**out = **in
+			}
+		}
+	}
+	if in.VPCSecurityGroupRefs != nil {
+		in, out := &in.VPCSecurityGroupRefs, &out.VPCSecurityGroupRefs
+		*out = make([]*corev1alpha1.AWSResourceReferenceWrapper, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+				(*in).DeepCopyInto(*out)
 			}
 		}
 	}

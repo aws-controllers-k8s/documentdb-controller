@@ -14,10 +14,19 @@
 package db_cluster
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
+	svcapitypes "github.com/aws-controllers-k8s/documentdb-controller/apis/v1alpha1"
+	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
+	ackcondition "github.com/aws-controllers-k8s/runtime/pkg/condition"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
+	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
+	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
+	corev1 "k8s.io/api/core/v1"
+
+	"github.com/aws-controllers-k8s/documentdb-controller/pkg/util"
 )
 
 const (
@@ -139,4 +148,140 @@ func clusterDeleting(r *resource) bool {
 	}
 	dbcs := *r.ko.Status.Status
 	return dbcs == StatusDeleting
+}
+
+// function to create restoreDbClusterFromSnapshot payload and call restoreDbClusterFromSnapshot API
+func (rm *resourceManager) restoreDbClusterFromSnapshot(
+	ctx context.Context,
+	r *resource,
+) (created *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.restoreDbClusterFromSnapshot")
+	defer func(err error) { exit(err) }(err)
+
+	resp, respErr := rm.sdkapi.RestoreDBClusterFromSnapshotWithContext(ctx, rm.newRestoreDBClusterFromSnapshotInput(r))
+	rm.metrics.RecordAPICall("CREATE", "RestoreDbClusterFromSnapshot", respErr)
+	if respErr != nil {
+		return nil, respErr
+	}
+
+	rm.setResourceFromRestoreDBClusterFromSnapshotOutput(r, resp)
+	rm.setStatusDefaults(r.ko)
+
+	// We expect the DB cluster to be in 'creating' status since we just
+	// issued the call to create it, but I suppose it doesn't hurt to check
+	// here.
+	if clusterCreating(&resource{r.ko}) {
+		// Setting resource synced condition to false will trigger a requeue of
+		// the resource. No need to return a requeue error here.
+		ackcondition.SetSynced(&resource{r.ko}, corev1.ConditionFalse, nil, nil)
+	}
+	return &resource{r.ko}, nil
+}
+
+func (rm *resourceManager) syncTags(
+	ctx context.Context,
+	desired *resource,
+	latest *resource,
+) (err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.syncTags")
+	defer func() { exit(err) }()
+
+	arn := (*string)(latest.ko.Status.ACKResourceMetadata.ARN)
+
+	toAdd, toDelete := util.ComputeTagsDelta(
+		desired.ko.Spec.Tags, latest.ko.Spec.Tags,
+	)
+
+	if len(toDelete) > 0 {
+		rlog.Debug("removing tags from cluster", "tags", toDelete)
+		_, err = rm.sdkapi.RemoveTagsFromResourceWithContext(
+			ctx,
+			&svcsdk.RemoveTagsFromResourceInput{
+				ResourceName: arn,
+				TagKeys:      toDelete,
+			},
+		)
+		rm.metrics.RecordAPICall("UPDATE", "RemoveTagsFromResource", err)
+		if err != nil {
+			return err
+		}
+	}
+
+	// NOTE(jaypipes): According to the RDS API documentation, adding a tag
+	// with a new value overwrites any existing tag with the same key. So, we
+	// don't need to do anything to "update" a Tag. Simply including it in the
+	// AddTagsToResource call is enough.
+	if len(toAdd) > 0 {
+		rlog.Debug("adding tags to cluster", "tags", toAdd)
+		_, err = rm.sdkapi.AddTagsToResourceWithContext(
+			ctx,
+			&svcsdk.AddTagsToResourceInput{
+				ResourceName: arn,
+				Tags:         sdkTagsFromResourceTags(toAdd),
+			},
+		)
+		rm.metrics.RecordAPICall("UPDATE", "AddTagsToResource", err)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// getTags retrieves the resource's associated tags
+func (rm *resourceManager) getTags(
+	ctx context.Context,
+	resourceARN string,
+) ([]*svcapitypes.Tag, error) {
+	resp, err := rm.sdkapi.ListTagsForResourceWithContext(
+		ctx,
+		&svcsdk.ListTagsForResourceInput{
+			ResourceName: &resourceARN,
+		},
+	)
+	rm.metrics.RecordAPICall("GET", "ListTagsForResource", err)
+	if err != nil {
+		return nil, err
+	}
+	tags := make([]*svcapitypes.Tag, 0, len(resp.TagList))
+	for _, tag := range resp.TagList {
+		tags = append(tags, &svcapitypes.Tag{
+			Key:   tag.Key,
+			Value: tag.Value,
+		})
+	}
+	return tags, nil
+}
+
+// compareTags adds a difference to the delta if the supplied resources have
+// different tag collections
+func compareTags(
+	delta *ackcompare.Delta,
+	a *resource,
+	b *resource,
+) {
+	if len(a.ko.Spec.Tags) != len(b.ko.Spec.Tags) {
+		delta.Add("Spec.Tags", a.ko.Spec.Tags, b.ko.Spec.Tags)
+	} else if len(a.ko.Spec.Tags) > 0 {
+		if !util.EqualTags(a.ko.Spec.Tags, b.ko.Spec.Tags) {
+			delta.Add("Spec.Tags", a.ko.Spec.Tags, b.ko.Spec.Tags)
+		}
+	}
+}
+
+// sdkTagsFromResourceTags transforms a *svcapitypes.Tag array to a *svcsdk.Tag
+// array.
+func sdkTagsFromResourceTags(
+	rTags []*svcapitypes.Tag,
+) []*svcsdk.Tag {
+	tags := make([]*svcsdk.Tag, len(rTags))
+	for i := range rTags {
+		tags[i] = &svcsdk.Tag{
+			Key:   rTags[i].Key,
+			Value: rTags[i].Value,
+		}
+	}
+	return tags
 }
