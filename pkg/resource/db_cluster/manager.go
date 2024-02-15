@@ -193,7 +193,7 @@ func (rm *resourceManager) Delete(
 // name for the resource
 func (rm *resourceManager) ARNFromName(name string) string {
 	return fmt.Sprintf(
-		"arn:aws:docdb:%s:%s:%s",
+		"arn:aws:documentdb:%s:%s:%s",
 		rm.awsRegion,
 		rm.awsAccountID,
 		name,

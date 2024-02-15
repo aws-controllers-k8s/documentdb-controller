@@ -10,6 +10,7 @@ ignore:
 controller_name: documentdb
 sdk_names:
   model_name: docdb
+  package_name: docdb
 operations:
   DeleteDBCluster:
     override_values:
