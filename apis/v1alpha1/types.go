@@ -173,15 +173,17 @@ type DBEngineVersion struct {
 
 // Detailed information about an instance.
 type DBInstance struct {
-	AutoMinorVersionUpgrade      *bool                         `json:"autoMinorVersionUpgrade,omitempty"`
-	AvailabilityZone             *string                       `json:"availabilityZone,omitempty"`
-	CACertificateIdentifier      *string                       `json:"caCertificateIdentifier,omitempty"`
-	CopyTagsToSnapshot           *bool                         `json:"copyTagsToSnapshot,omitempty"`
-	DBClusterIdentifier          *string                       `json:"dbClusterIdentifier,omitempty"`
-	DBInstanceARN                *string                       `json:"dbInstanceARN,omitempty"`
-	DBInstanceClass              *string                       `json:"dbInstanceClass,omitempty"`
-	DBInstanceIdentifier         *string                       `json:"dbInstanceIdentifier,omitempty"`
-	DBInstanceStatus             *string                       `json:"dbInstanceStatus,omitempty"`
+	AutoMinorVersionUpgrade *bool   `json:"autoMinorVersionUpgrade,omitempty"`
+	AvailabilityZone        *string `json:"availabilityZone,omitempty"`
+	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
+	CopyTagsToSnapshot      *bool   `json:"copyTagsToSnapshot,omitempty"`
+	DBClusterIdentifier     *string `json:"dbClusterIdentifier,omitempty"`
+	DBInstanceARN           *string `json:"dbInstanceARN,omitempty"`
+	DBInstanceClass         *string `json:"dbInstanceClass,omitempty"`
+	DBInstanceIdentifier    *string `json:"dbInstanceIdentifier,omitempty"`
+	DBInstanceStatus        *string `json:"dbInstanceStatus,omitempty"`
+	// Detailed information about a subnet group.
+	DBSubnetGroup                *DBSubnetGroup_SDK            `json:"dbSubnetGroup,omitempty"`
 	DBIResourceID                *string                       `json:"dbiResourceID,omitempty"`
 	EnabledCloudwatchLogsExports []*string                     `json:"enabledCloudwatchLogsExports,omitempty"`
 	Engine                       *string                       `json:"engine,omitempty"`
@@ -208,12 +210,13 @@ type DBInstanceStatusInfo struct {
 }
 
 // Detailed information about a subnet group.
-type DBSubnetGroup struct {
-	DBSubnetGroupARN         *string `json:"dbSubnetGroupARN,omitempty"`
-	DBSubnetGroupDescription *string `json:"dbSubnetGroupDescription,omitempty"`
-	DBSubnetGroupName        *string `json:"dbSubnetGroupName,omitempty"`
-	SubnetGroupStatus        *string `json:"subnetGroupStatus,omitempty"`
-	VPCID                    *string `json:"vpcID,omitempty"`
+type DBSubnetGroup_SDK struct {
+	DBSubnetGroupARN         *string   `json:"dbSubnetGroupARN,omitempty"`
+	DBSubnetGroupDescription *string   `json:"dbSubnetGroupDescription,omitempty"`
+	DBSubnetGroupName        *string   `json:"dbSubnetGroupName,omitempty"`
+	SubnetGroupStatus        *string   `json:"subnetGroupStatus,omitempty"`
+	Subnets                  []*Subnet `json:"subnets,omitempty"`
+	VPCID                    *string   `json:"vpcID,omitempty"`
 }
 
 // Network information for accessing a cluster or instance. Client programs
@@ -350,8 +353,10 @@ type ResourcePendingMaintenanceActions struct {
 
 // Detailed information about a subnet.
 type Subnet struct {
-	SubnetIdentifier *string `json:"subnetIdentifier,omitempty"`
-	SubnetStatus     *string `json:"subnetStatus,omitempty"`
+	// Information about an Availability Zone.
+	SubnetAvailabilityZone *AvailabilityZone `json:"subnetAvailabilityZone,omitempty"`
+	SubnetIdentifier       *string           `json:"subnetIdentifier,omitempty"`
+	SubnetStatus           *string           `json:"subnetStatus,omitempty"`
 }
 
 // Metadata assigned to an Amazon DocumentDB resource consisting of a key-value
