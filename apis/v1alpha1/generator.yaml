@@ -4,7 +4,7 @@ ignore:
       - DBClusterParameterGroup
       - DBClusterSnapshot
       - DBInstance
-      - DBSubnetGroup
+      # DBSubnetGroup
       - EventSubscription
       - GlobalCluster
 controller_name: documentdb
@@ -96,7 +96,40 @@ resources:
         from:
           operation: RestoreDBClusterFromSnapshot
           path: SnapshotIdentifier
-      Tags:
-        compare:
-          # We have a custom comparison function...
-          is_ignored: true
+  DBSubnetGroup:
+    renames:
+      operations:
+        DescribeDBSubnetGroups:
+          input_fields:
+            DBSubnetGroupName: Name
+            DBSubnetGroupDescription: Description
+        CreateDBSubnetGroup:
+          input_fields:
+            DBSubnetGroupName: Name
+            DBSubnetGroupDescription: Description
+        ModifyDBSubnetGroup:
+          input_fields:
+            DBSubnetGroupName: Name
+            DBSubnetGroupDescription: Description
+        DeleteDBSubnetGroup:
+          input_fields:
+            DBSubnetGroupName: Name
+    exceptions:
+      terminal_codes:
+        - DBSubnetGroupDoesNotCoverEnoughAZs
+        - InvalidSubnet
+        - InvalidParameter
+        - SubnetAlreadyInUse 
+    hooks:
+      sdk_read_many_post_set_output:
+        template_path: hooks/db_subnet_group/sdk_read_many_post_set_output.go.tpl
+      sdk_update_pre_set_output:
+        template_path: hooks/db_subnet_group/sdk_update_pre_set_output.go.tpl
+    fields:
+      SubnetIDs:
+        references:
+          service_name: ec2
+          resource: Subnet
+          path: Status.SubnetID
+      Name:
+        is_primary_key: true

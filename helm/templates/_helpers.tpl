@@ -97,6 +97,26 @@ rules:
   - patch
   - update
 - apiGroups:
+  - documentdb.services.k8s.aws
+  resources:
+  - dbsubnetgroups
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - documentdb.services.k8s.aws
+  resources:
+  - dbsubnetgroups/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - ec2.services.k8s.aws
   resources:
   - securitygroups
@@ -107,6 +127,20 @@ rules:
   - ec2.services.k8s.aws
   resources:
   - securitygroups/status
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ec2.services.k8s.aws
+  resources:
+  - subnets
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ec2.services.k8s.aws
+  resources:
+  - subnets/status
   verbs:
   - get
   - list

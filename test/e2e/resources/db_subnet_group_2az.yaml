@@ -1,0 +1,13 @@
+apiVersion: documentdb.services.k8s.aws/v1alpha1
+kind: DBSubnetGroup
+metadata:
+  name: $DB_SUBNET_GROUP_NAME
+spec:
+  name: $DB_SUBNET_GROUP_NAME
+  description: $DB_SUBNET_GROUP_DESC
+  subnetIDs:
+    - $PUBLIC_SUBNET_1
+    - $PUBLIC_SUBNET_2
+  tags:
+    - key: environment
+      value: dev

@@ -41,6 +41,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
 
 	_ "github.com/aws-controllers-k8s/documentdb-controller/pkg/resource/db_cluster"
+	_ "github.com/aws-controllers-k8s/documentdb-controller/pkg/resource/db_subnet_group"
 
 	"github.com/aws-controllers-k8s/documentdb-controller/pkg/version"
 )

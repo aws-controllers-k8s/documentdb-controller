@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - common
   - bases/documentdb.services.k8s.aws_dbclusters.yaml
+  - bases/documentdb.services.k8s.aws_dbsubnetgroups.yaml
