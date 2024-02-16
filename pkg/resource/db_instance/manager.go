@@ -51,7 +51,7 @@ var (
 // +kubebuilder:rbac:groups=documentdb.services.k8s.aws,resources=dbinstances,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=documentdb.services.k8s.aws,resources=dbinstances/status,verbs=get;update;patch
 
-var lateInitializeFieldNames = []string{"AvailabilityZone"}
+var lateInitializeFieldNames = []string{}
 
 // resourceManager is responsible for providing a consistent way to perform
 // CRUD operations in a backend AWS service API for Book custom resources.
@@ -248,10 +248,6 @@ func (rm *resourceManager) LateInitialize(
 func (rm *resourceManager) incompleteLateInitialization(
 	res acktypes.AWSResource,
 ) bool {
-	ko := rm.concreteResource(res).ko.DeepCopy()
-	if ko.Spec.AvailabilityZone == nil {
-		return true
-	}
 	return false
 }
 
@@ -261,12 +257,7 @@ func (rm *resourceManager) lateInitializeFromReadOneOutput(
 	observed acktypes.AWSResource,
 	latest acktypes.AWSResource,
 ) acktypes.AWSResource {
-	observedKo := rm.concreteResource(observed).ko.DeepCopy()
-	latestKo := rm.concreteResource(latest).ko.DeepCopy()
-	if observedKo.Spec.AvailabilityZone != nil && latestKo.Spec.AvailabilityZone == nil {
-		latestKo.Spec.AvailabilityZone = observedKo.Spec.AvailabilityZone
-	}
-	return &resource{latestKo}
+	return latest
 }
 
 // IsSynced returns true if the resource is synced.
