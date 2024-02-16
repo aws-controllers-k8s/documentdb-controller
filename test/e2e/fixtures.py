@@ -18,12 +18,7 @@ import dataclasses
 from acktest.k8s import resource as k8s
 import boto3
 import pytest
-
-
-@pytest.fixture(scope="module")
-def rds_client():
-    return boto3.client('docdb')
-
+from acktest.resources import random_suffix_name
 
 @dataclasses.dataclass
 class SecretKeyReference:
@@ -48,6 +43,7 @@ def k8s_secret():
     """
     created = []
     def _k8s_secret(ns, name, key, val):
+        name = random_suffix_name(name, 32)
         k8s.create_opaque_secret(ns, name, key, val)
         secret_ref = SecretKeyReference(ns, name, key, val)
         created.append(secret_ref)

@@ -53,6 +53,26 @@ rules:
 - apiGroups:
   - documentdb.services.k8s.aws
   resources:
+  - dbinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - documentdb.services.k8s.aws
+  resources:
+  - dbinstances/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - documentdb.services.k8s.aws
+  resources:
   - dbsubnetgroups
   verbs:
   - create

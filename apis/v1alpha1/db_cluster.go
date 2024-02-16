@@ -58,7 +58,8 @@ type DBClusterSpec struct {
 	// default.
 	//
 	// Example: mySubnetgroup
-	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
+	DBSubnetGroupName *string                                  `json:"dbSubnetGroupName,omitempty"`
+	DBSubnetGroupRef  *ackv1alpha1.AWSResourceReferenceWrapper `json:"dbSubnetGroupRef,omitempty"`
 	// Specifies whether this cluster can be deleted. If DeletionProtection is enabled,
 	// the cluster cannot be deleted unless it is modified and DeletionProtection
 	// is disabled. DeletionProtection protects clusters from being accidentally
