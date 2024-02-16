@@ -3,17 +3,19 @@
 ---
 annotations:
   capabilityLevel: Basic Install
-  shortDescription: AWS DocDB controller is a service controller for managing DocDB resources
+  shortDescription: AWS DocumentDB controller is a service controller for managing DocumentDB resources
     in Kubernetes
-displayName: AWS Controllers for Kubernetes - Amazon DocDB
+displayName: AWS Controllers for Kubernetes - Amazon DocumentDB
 description: |-
-  Manage Amazon DocDB resources in AWS from within your Kubernetes cluster.
+  Manage Amazon DocumentDB resources in AWS from within your Kubernetes cluster.
 
 
-  **About Amazon DocDB**
+  **About Amazon DocumentDB**
 
 
-  {ADD YOUR DESCRIPTION HERE}
+  Amazon DocumentDB (with MongoDB compatibility) is a fast, reliable, and fully managed database service. 
+  Amazon DocumentDB makes it easy to set up, operate, and scale MongoDB-compatible databases in the cloud. With Amazon DocumentDB, 
+  you can run the same application code and use the same drivers and tools that you use with MongoDB.
 
 
   **About the AWS Controllers for Kubernetes**
@@ -28,13 +30,15 @@ description: |-
 
   Please follow the following link: [Red Hat OpenShift](https://aws-controllers-k8s.github.io/community/docs/user-docs/openshift/)
 samples:
-- kind: ExampleCustomKind
+- kind: DBCluster
   spec: '{}'
-- kind: SecondExampleCustomKind
+- kind: DBInstance
+  spec: '{}'
+- kind: DBSubnetGroup
   spec: '{}'
 maintainers:
 - name: "documentdb maintainer team"
   email: "ack-maintainers@amazon.com"
 links:
-- name: Amazon DocDB Developer Resources
-  url: https://aws.amazon.com/DocDB/developer-resources/
+- name: Amazon DocumentDB Developer Resources
+  url: https://aws.amazon.com/documentdb/resources/
