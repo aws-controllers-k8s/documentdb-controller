@@ -99,6 +99,21 @@ spec:
 
                   Example: mySubnetgroup
                 type: string
+              dbSubnetGroupRef:
+                description: "AWSResourceReferenceWrapper provides a wrapper around
+                  *AWSResourceReference\ntype to provide more user friendly syntax
+                  for references using 'from' field\nEx:\nAPIIDRef:\n\n\n\tfrom:\n\t
+                  \ name: my-api"
+                properties:
+                  from:
+                    description: |-
+                      AWSResourceReference provides all the values necessary to reference another
+                      k8s resource for finding the identifier(Id/ARN/Name)
+                    properties:
+                      name:
+                        type: string
+                    type: object
+                type: object
               deletionProtection:
                 description: |-
                   Specifies whether this cluster can be deleted. If DeletionProtection is enabled,

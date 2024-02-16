@@ -10,6 +10,7 @@ rules:
   - documentdb.services.k8s.aws
   resources:
   - dbclusters
+  - dbinstances
   - dbsubnetgroups
   verbs:
   - create
@@ -23,6 +24,7 @@ rules:
   - documentdb.services.k8s.aws
   resources:
   - dbclusters
+  - dbinstances
   - dbsubnetgroups
   verbs:
   - get

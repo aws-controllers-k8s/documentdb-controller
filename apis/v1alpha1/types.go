@@ -99,6 +99,8 @@ type DBClusterSnapshot struct {
 	EngineVersion               *string      `json:"engineVersion,omitempty"`
 	KMSKeyID                    *string      `json:"kmsKeyID,omitempty"`
 	MasterUsername              *string      `json:"masterUsername,omitempty"`
+	PercentProgress             *int64       `json:"percentProgress,omitempty"`
+	Port                        *int64       `json:"port,omitempty"`
 	SnapshotCreateTime          *metav1.Time `json:"snapshotCreateTime,omitempty"`
 	SnapshotType                *string      `json:"snapshotType,omitempty"`
 	SourceDBClusterSnapshotARN  *string      `json:"sourceDBClusterSnapshotARN,omitempty"`
@@ -171,42 +173,57 @@ type DBEngineVersion struct {
 	SupportsLogExportsToCloudwatchLogs        *bool     `json:"supportsLogExportsToCloudwatchLogs,omitempty"`
 }
 
-// Detailed information about an instance.
-type DBInstance struct {
-	AutoMinorVersionUpgrade *bool   `json:"autoMinorVersionUpgrade,omitempty"`
-	AvailabilityZone        *string `json:"availabilityZone,omitempty"`
-	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
-	CopyTagsToSnapshot      *bool   `json:"copyTagsToSnapshot,omitempty"`
-	DBClusterIdentifier     *string `json:"dbClusterIdentifier,omitempty"`
-	DBInstanceARN           *string `json:"dbInstanceARN,omitempty"`
-	DBInstanceClass         *string `json:"dbInstanceClass,omitempty"`
-	DBInstanceIdentifier    *string `json:"dbInstanceIdentifier,omitempty"`
-	DBInstanceStatus        *string `json:"dbInstanceStatus,omitempty"`
-	// Detailed information about a subnet group.
-	DBSubnetGroup                *DBSubnetGroup_SDK            `json:"dbSubnetGroup,omitempty"`
-	DBIResourceID                *string                       `json:"dbiResourceID,omitempty"`
-	EnabledCloudwatchLogsExports []*string                     `json:"enabledCloudwatchLogsExports,omitempty"`
-	Engine                       *string                       `json:"engine,omitempty"`
-	EngineVersion                *string                       `json:"engineVersion,omitempty"`
-	InstanceCreateTime           *metav1.Time                  `json:"instanceCreateTime,omitempty"`
-	KMSKeyID                     *string                       `json:"kmsKeyID,omitempty"`
-	LatestRestorableTime         *metav1.Time                  `json:"latestRestorableTime,omitempty"`
-	PerformanceInsightsEnabled   *bool                         `json:"performanceInsightsEnabled,omitempty"`
-	PerformanceInsightsKMSKeyID  *string                       `json:"performanceInsightsKMSKeyID,omitempty"`
-	PreferredBackupWindow        *string                       `json:"preferredBackupWindow,omitempty"`
-	PreferredMaintenanceWindow   *string                       `json:"preferredMaintenanceWindow,omitempty"`
-	PromotionTier                *int64                        `json:"promotionTier,omitempty"`
-	PubliclyAccessible           *bool                         `json:"publiclyAccessible,omitempty"`
-	StorageEncrypted             *bool                         `json:"storageEncrypted,omitempty"`
-	VPCSecurityGroups            []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
-}
-
 // Provides a list of status information for an instance.
 type DBInstanceStatusInfo struct {
 	Message    *string `json:"message,omitempty"`
 	Normal     *bool   `json:"normal,omitempty"`
 	Status     *string `json:"status,omitempty"`
 	StatusType *string `json:"statusType,omitempty"`
+}
+
+// Detailed information about an instance.
+type DBInstance_SDK struct {
+	AutoMinorVersionUpgrade *bool   `json:"autoMinorVersionUpgrade,omitempty"`
+	AvailabilityZone        *string `json:"availabilityZone,omitempty"`
+	BackupRetentionPeriod   *int64  `json:"backupRetentionPeriod,omitempty"`
+	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
+	// Returns the details of the DB instance’s server certificate.
+	//
+	// For more information, see Updating Your Amazon DocumentDB TLS Certificates
+	// (https://docs.aws.amazon.com/documentdb/latest/developerguide/ca_cert_rotation.html)
+	// and Encrypting Data in Transit (https://docs.aws.amazon.com/documentdb/latest/developerguide/security.encryption.ssl.html)
+	// in the Amazon DocumentDB Developer Guide.
+	CertificateDetails   *CertificateDetails `json:"certificateDetails,omitempty"`
+	CopyTagsToSnapshot   *bool               `json:"copyTagsToSnapshot,omitempty"`
+	DBClusterIdentifier  *string             `json:"dbClusterIdentifier,omitempty"`
+	DBInstanceARN        *string             `json:"dbInstanceARN,omitempty"`
+	DBInstanceClass      *string             `json:"dbInstanceClass,omitempty"`
+	DBInstanceIdentifier *string             `json:"dbInstanceIdentifier,omitempty"`
+	DBInstanceStatus     *string             `json:"dbInstanceStatus,omitempty"`
+	// Detailed information about a subnet group.
+	DBSubnetGroup                *DBSubnetGroup_SDK `json:"dbSubnetGroup,omitempty"`
+	DBIResourceID                *string            `json:"dbiResourceID,omitempty"`
+	EnabledCloudwatchLogsExports []*string          `json:"enabledCloudwatchLogsExports,omitempty"`
+	// Network information for accessing a cluster or instance. Client programs
+	// must specify a valid endpoint to access these Amazon DocumentDB resources.
+	Endpoint             *Endpoint    `json:"endpoint,omitempty"`
+	Engine               *string      `json:"engine,omitempty"`
+	EngineVersion        *string      `json:"engineVersion,omitempty"`
+	InstanceCreateTime   *metav1.Time `json:"instanceCreateTime,omitempty"`
+	KMSKeyID             *string      `json:"kmsKeyID,omitempty"`
+	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
+	// One or more modified settings for an instance. These modified settings have
+	// been requested, but haven't been applied yet.
+	PendingModifiedValues       *PendingModifiedValues        `json:"pendingModifiedValues,omitempty"`
+	PerformanceInsightsEnabled  *bool                         `json:"performanceInsightsEnabled,omitempty"`
+	PerformanceInsightsKMSKeyID *string                       `json:"performanceInsightsKMSKeyID,omitempty"`
+	PreferredBackupWindow       *string                       `json:"preferredBackupWindow,omitempty"`
+	PreferredMaintenanceWindow  *string                       `json:"preferredMaintenanceWindow,omitempty"`
+	PromotionTier               *int64                        `json:"promotionTier,omitempty"`
+	PubliclyAccessible          *bool                         `json:"publiclyAccessible,omitempty"`
+	StatusInfos                 []*DBInstanceStatusInfo       `json:"statusInfos,omitempty"`
+	StorageEncrypted            *bool                         `json:"storageEncrypted,omitempty"`
+	VPCSecurityGroups           []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
 }
 
 // Detailed information about a subnet group.
@@ -224,6 +241,7 @@ type DBSubnetGroup_SDK struct {
 type Endpoint struct {
 	Address      *string `json:"address,omitempty"`
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
+	Port         *int64  `json:"port,omitempty"`
 }
 
 // Contains the result of a successful invocation of the DescribeEngineDefaultClusterParameters
@@ -342,8 +360,11 @@ type PendingModifiedValues struct {
 	LicenseModel            *string `json:"licenseModel,omitempty"`
 	MasterUserPassword      *string `json:"masterUserPassword,omitempty"`
 	MultiAZ                 *bool   `json:"multiAZ,omitempty"`
-	Port                    *int64  `json:"port,omitempty"`
-	StorageType             *string `json:"storageType,omitempty"`
+	// A list of the log types whose configuration is still pending. These log types
+	// are in the process of being activated or deactivated.
+	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
+	Port                         *int64                        `json:"port,omitempty"`
+	StorageType                  *string                       `json:"storageType,omitempty"`
 }
 
 // Represents the output of ApplyPendingMaintenanceAction.

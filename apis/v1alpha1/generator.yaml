@@ -3,7 +3,7 @@ ignore:
       # DBCluster
       - DBClusterParameterGroup
       - DBClusterSnapshot
-      - DBInstance
+      # DBInstance
       # DBSubnetGroup
       - EventSubscription
       - GlobalCluster
@@ -37,6 +37,31 @@ operations:
       # This flag was designed as a protect flag but not necessary in controller
       # side when customer need to make the engine version change
       AllowMajorVersionUpgrade: true
+  ModifyDBInstance:
+    override_values:
+      # The whole concept of a "maintenance window" isn't aligned with the
+      # declarative state model in Kubernetes. Users should build "maintenance
+      # window" functionality at a higher layer than the APIs that manage the
+      # lifecycle of individual resources like a DB cluster or DB instance. For
+      # example, users can build maintenance window functionality into their
+      # deployment pipeline solution or GitOps solution.
+      #
+      # We override the value of the ApplyImmediately field in the modify
+      # operations to "true" because we want changes that a Kubernetes user
+      # makes to a resource's Spec to be reconciled by the ACK service
+      # controller, not a different service.
+      ApplyImmediately: true
+      # We override the value of the ApplyImmediately field in the modify
+      # operations to "true" because we want changes that a Kubernetes user
+      # makes to a resource's Spec to be reconciled by the ACK service
+      # controller, not a different service.
+      AllowMajorVersionUpgrade: true
+  DeleteDBInstance:
+    override_values:
+      # Clearly this is not ideal, but will suffice until we add custom hook
+      # points to the build_request methods to enable a genmeration of the
+      # final snapshot identifier to use.
+      SkipFinalSnapshot: true
 resources:
   DBCluster:
     hooks:
@@ -83,10 +108,10 @@ resources:
       #  references:
       #    resource: DBClusterParameterGroup
       #    path: Spec.Name
-      # DBSubnetGroupName:
-      #  references:
-      #    resource: DBSubnetGroup
-      #    path: Spec.Name
+      DBSubnetGroupName:
+        references:
+          resource: DBSubnetGroup
+          path: Spec.Name
       VpcSecurityGroupIds:
         references:
           resource: SecurityGroup
@@ -133,3 +158,57 @@ resources:
           path: Status.SubnetID
       Name:
         is_primary_key: true
+  DBInstance:
+    hooks:
+      sdk_create_post_set_output:
+        template_path: hooks/db_instance/sdk_create_post_set_output.go.tpl
+      sdk_read_many_post_set_output:
+        template_path: hooks/db_instance/sdk_read_many_post_set_output.go.tpl
+      sdk_update_pre_build_request:
+        template_path: hooks/db_instance/sdk_update_pre_build_request.go.tpl
+      sdk_update_post_build_request:
+        template_path: hooks/db_instance/sdk_update_post_build_request.go.tpl
+      sdk_update_post_set_output:
+        template_path: hooks/db_instance/sdk_update_post_set_output.go.tpl
+      sdk_delete_pre_build_request:
+        template_path: hooks/db_instance/sdk_delete_pre_build_request.go.tpl
+    exceptions:
+      terminal_codes:
+        - InvalidParameter
+        - InvalidParameterValue
+        - InvalidParameterCombination
+    fields:
+      AvailabilityZone:
+        late_initialize: {}
+        is_immutable: true
+      DBInstanceIdentifier:
+        is_primary_key: true
+      DBInstanceStatus:
+        print:
+          name: "STATUS"
+      PerformanceInsightsKMSKeyId:
+        references:
+          resource: Key
+          service_name: kms
+          path: Status.ACKResourceMetadata.ARN
+      # DBParameterGroupName:
+      #  references:
+      #    resource: DBParameterGroup
+      #    path: Spec.Name
+      DBSubnetGroupName:
+        references:
+          resource: DBSubnetGroup
+          path: Spec.Name
+      VpcSecurityGroupIds:
+        references:
+          resource: SecurityGroup
+          service_name: ec2
+          path: Status.ID
+    renames:
+      operations:
+        CreateDBInstance:
+          input_fields:
+            EnablePerformanceInsights: PerformanceInsightsEnabled
+        ModifyDBInstance:
+          input_fields:
+            EnablePerformanceInsights: PerformanceInsightsEnabled

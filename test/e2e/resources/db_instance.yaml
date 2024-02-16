@@ -1,0 +1,14 @@
+apiVersion: documentdb.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: $DB_INSTANCE_ID
+spec:
+  allocatedStorage: 20
+  copyTagsToSnapshot: $COPY_TAGS_TO_SNAPSHOT
+  dbInstanceClass: db.r6g.large
+  dbInstanceIdentifier: $DB_INSTANCE_ID
+  dbClusterIdentifier: $DB_CLUSTER_ID
+  engine: docdb
+  tags:
+  - key: environment
+    value: dev
