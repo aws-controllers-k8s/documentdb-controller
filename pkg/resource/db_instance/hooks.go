@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	svcapitypes "github.com/aws-controllers-k8s/documentdb-controller/apis/v1alpha1"
+	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
@@ -256,4 +257,16 @@ func sdkTagsFromResourceTags(
 		}
 	}
 	return tags
+}
+
+// compareTags adds a difference to the delta if the supplied resources have
+// different tag collections
+func customPreCompare(
+	delta *ackcompare.Delta,
+	a *resource,
+	b *resource,
+) {
+	if a.ko.Spec.AvailabilityZone == nil && b.ko.Spec.AvailabilityZone != nil {
+		a.ko.Spec.AvailabilityZone = b.ko.Spec.AvailabilityZone
+	}
 }
