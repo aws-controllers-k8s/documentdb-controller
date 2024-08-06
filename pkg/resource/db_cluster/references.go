@@ -72,24 +72,23 @@ func (rm *resourceManager) ResolveReferences(
 	apiReader client.Reader,
 	res acktypes.AWSResource,
 ) (acktypes.AWSResource, bool, error) {
-	namespace := res.MetaObject().GetNamespace()
 	ko := rm.concreteResource(res).ko
 
 	resourceHasReferences := false
 	err := validateReferenceFields(ko)
-	if fieldHasReferences, err := rm.resolveReferenceForDBSubnetGroupName(ctx, apiReader, namespace, ko); err != nil {
+	if fieldHasReferences, err := rm.resolveReferenceForDBSubnetGroupName(ctx, apiReader, ko); err != nil {
 		return &resource{ko}, (resourceHasReferences || fieldHasReferences), err
 	} else {
 		resourceHasReferences = resourceHasReferences || fieldHasReferences
 	}
 
-	if fieldHasReferences, err := rm.resolveReferenceForKMSKeyID(ctx, apiReader, namespace, ko); err != nil {
+	if fieldHasReferences, err := rm.resolveReferenceForKMSKeyID(ctx, apiReader, ko); err != nil {
 		return &resource{ko}, (resourceHasReferences || fieldHasReferences), err
 	} else {
 		resourceHasReferences = resourceHasReferences || fieldHasReferences
 	}
 
-	if fieldHasReferences, err := rm.resolveReferenceForVPCSecurityGroupIDs(ctx, apiReader, namespace, ko); err != nil {
+	if fieldHasReferences, err := rm.resolveReferenceForVPCSecurityGroupIDs(ctx, apiReader, ko); err != nil {
 		return &resource{ko}, (resourceHasReferences || fieldHasReferences), err
 	} else {
 		resourceHasReferences = resourceHasReferences || fieldHasReferences
@@ -123,7 +122,6 @@ func validateReferenceFields(ko *svcapitypes.DBCluster) error {
 func (rm *resourceManager) resolveReferenceForDBSubnetGroupName(
 	ctx context.Context,
 	apiReader client.Reader,
-	namespace string,
 	ko *svcapitypes.DBCluster,
 ) (hasReferences bool, err error) {
 	if ko.Spec.DBSubnetGroupRef != nil && ko.Spec.DBSubnetGroupRef.From != nil {
@@ -131,6 +129,10 @@ func (rm *resourceManager) resolveReferenceForDBSubnetGroupName(
 		arr := ko.Spec.DBSubnetGroupRef.From
 		if arr.Name == nil || *arr.Name == "" {
 			return hasReferences, fmt.Errorf("provided resource reference is nil or empty: DBSubnetGroupRef")
+		}
+		namespace := ko.ObjectMeta.GetNamespace()
+		if arr.Namespace != nil && *arr.Namespace != "" {
+			namespace = *arr.Namespace
 		}
 		obj := &svcapitypes.DBSubnetGroup{}
 		if err := getReferencedResourceState_DBSubnetGroup(ctx, apiReader, obj, *arr.Name, namespace); err != nil {
@@ -200,7 +202,6 @@ func getReferencedResourceState_DBSubnetGroup(
 func (rm *resourceManager) resolveReferenceForKMSKeyID(
 	ctx context.Context,
 	apiReader client.Reader,
-	namespace string,
 	ko *svcapitypes.DBCluster,
 ) (hasReferences bool, err error) {
 	if ko.Spec.KMSKeyRef != nil && ko.Spec.KMSKeyRef.From != nil {
@@ -208,6 +209,10 @@ func (rm *resourceManager) resolveReferenceForKMSKeyID(
 		arr := ko.Spec.KMSKeyRef.From
 		if arr.Name == nil || *arr.Name == "" {
 			return hasReferences, fmt.Errorf("provided resource reference is nil or empty: KMSKeyRef")
+		}
+		namespace := ko.ObjectMeta.GetNamespace()
+		if arr.Namespace != nil && *arr.Namespace != "" {
+			namespace = *arr.Namespace
 		}
 		obj := &kmsapitypes.Key{}
 		if err := getReferencedResourceState_Key(ctx, apiReader, obj, *arr.Name, namespace); err != nil {
@@ -277,7 +282,6 @@ func getReferencedResourceState_Key(
 func (rm *resourceManager) resolveReferenceForVPCSecurityGroupIDs(
 	ctx context.Context,
 	apiReader client.Reader,
-	namespace string,
 	ko *svcapitypes.DBCluster,
 ) (hasReferences bool, err error) {
 	for _, f0iter := range ko.Spec.VPCSecurityGroupRefs {
@@ -286,6 +290,10 @@ func (rm *resourceManager) resolveReferenceForVPCSecurityGroupIDs(
 			arr := f0iter.From
 			if arr.Name == nil || *arr.Name == "" {
 				return hasReferences, fmt.Errorf("provided resource reference is nil or empty: VPCSecurityGroupRefs")
+			}
+			namespace := ko.ObjectMeta.GetNamespace()
+			if arr.Namespace != nil && *arr.Namespace != "" {
+				namespace = *arr.Namespace
 			}
 			obj := &ec2apitypes.SecurityGroup{}
 			if err := getReferencedResourceState_SecurityGroup(ctx, apiReader, obj, *arr.Name, namespace); err != nil {
