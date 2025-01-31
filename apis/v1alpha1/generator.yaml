@@ -17,7 +17,7 @@ operations:
       # Clearly this is not ideal, but will suffice until we add custom hook
       # points to the build_request methods to enable a genmeration of the
       # final snapshot identifier to use.
-      SkipFinalSnapshot: true
+      SkipFinalSnapshot: aws.Bool(true)
   ModifyDBCluster:
     override_values:
       # The whole concept of a "maintenance window" isn't aligned with the
@@ -31,12 +31,12 @@ operations:
       # operations to "true" because we want changes that a Kubernetes user
       # makes to a resource's Spec to be reconciled by the ACK service
       # controller, not a different service.
-      ApplyImmediately: true
+      ApplyImmediately: aws.Bool(true)
       # We override the value of AllowMajorVersionUpgrade field in the modify
       # call since any engine version change should apply directly.
       # This flag was designed as a protect flag but not necessary in controller
       # side when customer need to make the engine version change
-      AllowMajorVersionUpgrade: true
+      AllowMajorVersionUpgrade: aws.Bool(true)
   ModifyDBInstance:
     override_values:
       # The whole concept of a "maintenance window" isn't aligned with the
@@ -50,12 +50,12 @@ operations:
       # operations to "true" because we want changes that a Kubernetes user
       # makes to a resource's Spec to be reconciled by the ACK service
       # controller, not a different service.
-      ApplyImmediately: true
+      ApplyImmediately: aws.Bool(true)
       # We override the value of the ApplyImmediately field in the modify
       # operations to "true" because we want changes that a Kubernetes user
       # makes to a resource's Spec to be reconciled by the ACK service
       # controller, not a different service.
-      AllowMajorVersionUpgrade: true
+      AllowMajorVersionUpgrade: aws.Bool(true)
   DeleteDBInstance:
     override_values:
       # Clearly this is not ideal, but will suffice until we add custom hook
@@ -88,6 +88,9 @@ resources:
     update_operation:
       custom_method_name: customUpdate
     fields:
+      DestinationRegion:
+        set:
+          - ignore: all
       DBClusterIdentifier:
         is_primary_key: true
       MasterUserPassword:
