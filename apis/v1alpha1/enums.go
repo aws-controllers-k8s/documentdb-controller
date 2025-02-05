@@ -25,10 +25,10 @@ const (
 type SourceType string
 
 const (
+	SourceType_db_cluster          SourceType = "db-cluster"
+	SourceType_db_cluster_snapshot SourceType = "db-cluster-snapshot"
 	SourceType_db_instance         SourceType = "db-instance"
 	SourceType_db_parameter_group  SourceType = "db-parameter-group"
 	SourceType_db_security_group   SourceType = "db-security-group"
 	SourceType_db_snapshot         SourceType = "db-snapshot"
-	SourceType_db_cluster          SourceType = "db-cluster"
-	SourceType_db_cluster_snapshot SourceType = "db-cluster-snapshot"
 )

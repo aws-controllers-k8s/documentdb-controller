@@ -20,7 +20,8 @@ import (
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackcondition "github.com/aws-controllers-k8s/runtime/pkg/condition"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	svcsdk "github.com/aws/aws-sdk-go/service/docdb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/docdb"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -81,7 +82,7 @@ func (rm *resourceManager) customUpdate(
 
 	var resp *svcsdk.ModifyDBClusterOutput
 	_ = resp
-	resp, err = rm.sdkapi.ModifyDBClusterWithContext(ctx, input)
+	resp, err = rm.sdkapi.ModifyDBCluster(ctx, input)
 
 	rm.metrics.RecordAPICall("UPDATE", "ModifyDBCluster", err)
 	if err != nil {
@@ -109,18 +110,13 @@ func (rm *resourceManager) customUpdate(
 		ko.Status.AssociatedRoles = nil
 	}
 	if resp.DBCluster.AvailabilityZones != nil {
-		f6 := []*string{}
-		for _, f6iter := range resp.DBCluster.AvailabilityZones {
-			var f6elem string
-			f6elem = *f6iter
-			f6 = append(f6, &f6elem)
-		}
-		ko.Spec.AvailabilityZones = f6
+		ko.Spec.AvailabilityZones = aws.StringSlice(resp.DBCluster.AvailabilityZones)
 	} else {
 		ko.Spec.AvailabilityZones = nil
 	}
 	if resp.DBCluster.BackupRetentionPeriod != nil {
-		ko.Spec.BackupRetentionPeriod = resp.DBCluster.BackupRetentionPeriod
+		brpcopy := aws.Int64(int64(*resp.DBCluster.BackupRetentionPeriod))
+		ko.Spec.BackupRetentionPeriod = brpcopy
 	} else {
 		ko.Spec.BackupRetentionPeriod = nil
 	}
@@ -160,7 +156,8 @@ func (rm *resourceManager) customUpdate(
 				f19elem.IsClusterWriter = f19iter.IsClusterWriter
 			}
 			if f19iter.PromotionTier != nil {
-				f19elem.PromotionTier = f19iter.PromotionTier
+				ptcopy := aws.Int64(int64(*f19iter.PromotionTier))
+				f19elem.PromotionTier = ptcopy
 			}
 			f19 = append(f19, f19elem)
 		}
@@ -194,13 +191,7 @@ func (rm *resourceManager) customUpdate(
 		ko.Status.EarliestRestorableTime = nil
 	}
 	if resp.DBCluster.EnabledCloudwatchLogsExports != nil {
-		f29 := []*string{}
-		for _, f29iter := range resp.DBCluster.EnabledCloudwatchLogsExports {
-			var f29elem string
-			f29elem = *f29iter
-			f29 = append(f29, &f29elem)
-		}
-		ko.Status.EnabledCloudwatchLogsExports = f29
+		ko.Status.EnabledCloudwatchLogsExports = aws.StringSlice(resp.DBCluster.EnabledCloudwatchLogsExports)
 	} else {
 		ko.Status.EnabledCloudwatchLogsExports = nil
 	}
@@ -250,7 +241,8 @@ func (rm *resourceManager) customUpdate(
 		ko.Status.PercentProgress = nil
 	}
 	if resp.DBCluster.Port != nil {
-		ko.Spec.Port = resp.DBCluster.Port
+		pcopy := aws.Int64(int64(*resp.DBCluster.Port))
+		ko.Spec.Port = pcopy
 	} else {
 		ko.Spec.Port = nil
 	}
@@ -265,13 +257,7 @@ func (rm *resourceManager) customUpdate(
 		ko.Spec.PreferredMaintenanceWindow = nil
 	}
 	if resp.DBCluster.ReadReplicaIdentifiers != nil {
-		f48 := []*string{}
-		for _, f48iter := range resp.DBCluster.ReadReplicaIdentifiers {
-			var f48elem string
-			f48elem = *f48iter
-			f48 = append(f48, &f48elem)
-		}
-		ko.Status.ReadReplicaIdentifiers = f48
+		ko.Status.ReadReplicaIdentifiers = aws.StringSlice(resp.DBCluster.ReadReplicaIdentifiers)
 	} else {
 		ko.Status.ReadReplicaIdentifiers = nil
 	}
@@ -325,24 +311,24 @@ func (rm *resourceManager) newCustomUpdateRequestPayload(
 ) (*svcsdk.ModifyDBClusterInput, error) {
 	res := &svcsdk.ModifyDBClusterInput{}
 
-	res.SetApplyImmediately(true)
-	res.SetAllowMajorVersionUpgrade(true)
+	res.ApplyImmediately = aws.Bool(true)
+	res.AllowMajorVersionUpgrade = aws.Bool(true)
 	if r.ko.Spec.BackupRetentionPeriod != nil && delta.DifferentAt("Spec.BackupRetentionPeriod") {
-		res.SetBackupRetentionPeriod(*r.ko.Spec.BackupRetentionPeriod)
+		res.BackupRetentionPeriod = aws.Int32(int32(*r.ko.Spec.BackupRetentionPeriod))
 	}
 	// NOTE(jaypipes): This is a required field in the input shape. If not set,
 	// we get back a cryptic error message "1 Validation error(s) found."
 	if r.ko.Spec.DBClusterIdentifier != nil {
-		res.SetDBClusterIdentifier(*r.ko.Spec.DBClusterIdentifier)
+		res.DBClusterIdentifier = r.ko.Spec.DBClusterIdentifier
 	}
 	if r.ko.Spec.DBClusterParameterGroupName != nil && delta.DifferentAt("Spec.DBClusterParameterGroupName") {
-		res.SetDBClusterParameterGroupName(*r.ko.Spec.DBClusterParameterGroupName)
+		res.DBClusterParameterGroupName = r.ko.Spec.DBClusterParameterGroupName
 	}
 	if r.ko.Spec.DeletionProtection != nil && delta.DifferentAt("Spec.DeletionProtection") {
-		res.SetDeletionProtection(*r.ko.Spec.DeletionProtection)
+		res.DeletionProtection = r.ko.Spec.DeletionProtection
 	}
 	if r.ko.Spec.EngineVersion != nil && delta.DifferentAt("Spec.EngineVersion") {
-		res.SetEngineVersion(*r.ko.Spec.EngineVersion)
+		res.EngineVersion = r.ko.Spec.EngineVersion
 	}
 	if r.ko.Spec.MasterUserPassword != nil && delta.DifferentAt("Spec.MasterUserPassword") {
 		tmpSecret, err := rm.rr.SecretValueFromReference(ctx, r.ko.Spec.MasterUserPassword)
@@ -350,26 +336,20 @@ func (rm *resourceManager) newCustomUpdateRequestPayload(
 			return nil, err
 		}
 		if tmpSecret != "" {
-			res.SetMasterUserPassword(tmpSecret)
+			res.MasterUserPassword = &tmpSecret
 		}
 	}
 	if r.ko.Spec.Port != nil && delta.DifferentAt("Spec.Port") {
-		res.SetPort(*r.ko.Spec.Port)
+		res.Port = aws.Int32(int32(*r.ko.Spec.Port))
 	}
 	if r.ko.Spec.PreferredBackupWindow != nil && delta.DifferentAt("Spec.PreferredBackupWindow") {
-		res.SetPreferredBackupWindow(*r.ko.Spec.PreferredBackupWindow)
+		res.PreferredBackupWindow = r.ko.Spec.PreferredBackupWindow
 	}
 	if r.ko.Spec.PreferredMaintenanceWindow != nil && delta.DifferentAt("Spec.PreferredMaintenanceWindow") {
-		res.SetPreferredMaintenanceWindow(*r.ko.Spec.PreferredMaintenanceWindow)
+		res.PreferredMaintenanceWindow = r.ko.Spec.PreferredMaintenanceWindow
 	}
 	if r.ko.Spec.VPCSecurityGroupIDs != nil && delta.DifferentAt("Spec.VPCSecurityGroupIDs") {
-		f23 := []*string{}
-		for _, f23iter := range r.ko.Spec.VPCSecurityGroupIDs {
-			var f23elem string
-			f23elem = *f23iter
-			f23 = append(f23, &f23elem)
-		}
-		res.SetVpcSecurityGroupIds(f23)
+		res.VpcSecurityGroupIds = aws.ToStringSlice(r.ko.Spec.VPCSecurityGroupIDs)
 	}
 	return res, nil
 }
