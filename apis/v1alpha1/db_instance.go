@@ -29,6 +29,7 @@ type DBInstanceSpec struct {
 	// not perform minor version upgrades regardless of the value set.
 	//
 	// Default: false
+
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 	// The Amazon EC2 Availability Zone that the instance is created in.
 	//
@@ -36,6 +37,9 @@ type DBInstanceSpec struct {
 	// Web Services Region.
 	//
 	// Example: us-east-1d
+
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 	// The CA certificate identifier to use for the DB instance's server certificate.
 	//
@@ -43,36 +47,47 @@ type DBInstanceSpec struct {
 	// (https://docs.aws.amazon.com/documentdb/latest/developerguide/ca_cert_rotation.html)
 	// and Encrypting Data in Transit (https://docs.aws.amazon.com/documentdb/latest/developerguide/security.encryption.ssl.html)
 	// in the Amazon DocumentDB Developer Guide.
+
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
 	// A value that indicates whether to copy tags from the DB instance to snapshots
 	// of the DB instance. By default, tags are not copied.
+
 	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
 	// The identifier of the cluster that the instance will belong to.
+
 	// +kubebuilder:validation:Required
+
 	DBClusterIdentifier *string `json:"dbClusterIdentifier"`
 	// The compute and memory capacity of the instance; for example, db.r5.large.
+
 	// +kubebuilder:validation:Required
+
 	DBInstanceClass *string `json:"dbInstanceClass"`
 	// The instance identifier. This parameter is stored as a lowercase string.
 	//
 	// Constraints:
 	//
-	//   - Must contain from 1 to 63 letters, numbers, or hyphens.
+	//    * Must contain from 1 to 63 letters, numbers, or hyphens.
 	//
-	//   - The first character must be a letter.
+	//    * The first character must be a letter.
 	//
-	//   - Cannot end with a hyphen or contain two consecutive hyphens.
+	//    * Cannot end with a hyphen or contain two consecutive hyphens.
 	//
 	// Example: mydbinstance
+
 	// +kubebuilder:validation:Required
+
 	DBInstanceIdentifier *string `json:"dbInstanceIdentifier"`
 	// The name of the database engine to be used for this instance.
 	//
 	// Valid value: docdb
+
 	// +kubebuilder:validation:Required
+
 	Engine *string `json:"engine"`
 	// A value that indicates whether to enable Performance Insights for the DB
 	// Instance. For more information, see Using Amazon Performance Insights (https://docs.aws.amazon.com/documentdb/latest/developerguide/performance-insights.html).
+
 	PerformanceInsightsEnabled *bool `json:"performanceInsightsEnabled,omitempty"`
 	// The KMS key identifier for encryption of Performance Insights data.
 	//
@@ -83,7 +98,9 @@ type DBInstanceSpec struct {
 	// DocumentDB uses your default KMS key. There is a default KMS key for your
 	// Amazon Web Services account. Your Amazon Web Services account has a different
 	// default KMS key for each Amazon Web Services region.
-	PerformanceInsightsKMSKeyID  *string                                  `json:"performanceInsightsKMSKeyID,omitempty"`
+
+	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
+
 	PerformanceInsightsKMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"performanceInsightsKMSKeyRef,omitempty"`
 	// The time range each week during which system maintenance can occur, in Universal
 	// Coordinated Time (UTC).
@@ -97,6 +114,7 @@ type DBInstanceSpec struct {
 	// Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
 	//
 	// Constraints: Minimum 30-minute window.
+
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 	// A value that specifies the order in which an Amazon DocumentDB replica is
 	// promoted to the primary instance after a failure of the existing primary
@@ -105,9 +123,11 @@ type DBInstanceSpec struct {
 	// Default: 1
 	//
 	// Valid values: 0-15
+
 	PromotionTier *int64 `json:"promotionTier,omitempty"`
 	// The tags to be assigned to the instance. You can assign up to 10 tags to
 	// an instance.
+
 	Tags []*Tag `json:"tags,omitempty"`
 }
 
@@ -118,7 +138,7 @@ type DBInstanceStatus struct {
 	// constructed ARN for the resource
 	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
-	// All CRS managed by ACK have a common `Status.Conditions` member that
+	// All CRs managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource

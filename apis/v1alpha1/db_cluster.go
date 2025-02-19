@@ -27,6 +27,7 @@ type DBClusterSpec struct {
 
 	// A list of Amazon EC2 Availability Zones that instances in the cluster can
 	// be created in.
+
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
 	// The number of days for which automated backups are retained. You must specify
 	// a minimum value of 1.
@@ -35,22 +36,26 @@ type DBClusterSpec struct {
 	//
 	// Constraints:
 	//
-	//   - Must be a value from 1 to 35.
+	//    * Must be a value from 1 to 35.
+
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 	// The cluster identifier. This parameter is stored as a lowercase string.
 	//
 	// Constraints:
 	//
-	//   - Must contain from 1 to 63 letters, numbers, or hyphens.
+	//    * Must contain from 1 to 63 letters, numbers, or hyphens.
 	//
-	//   - The first character must be a letter.
+	//    * The first character must be a letter.
 	//
-	//   - Cannot end with a hyphen or contain two consecutive hyphens.
+	//    * Cannot end with a hyphen or contain two consecutive hyphens.
 	//
 	// Example: my-cluster
+
 	// +kubebuilder:validation:Required
+
 	DBClusterIdentifier *string `json:"dbClusterIdentifier"`
 	// The name of the cluster parameter group to associate with this cluster.
+
 	DBClusterParameterGroupName *string `json:"dbClusterParameterGroupName,omitempty"`
 	// A subnet group to associate with this cluster.
 	//
@@ -58,31 +63,40 @@ type DBClusterSpec struct {
 	// default.
 	//
 	// Example: mySubnetgroup
-	DBSubnetGroupName *string                                  `json:"dbSubnetGroupName,omitempty"`
-	DBSubnetGroupRef  *ackv1alpha1.AWSResourceReferenceWrapper `json:"dbSubnetGroupRef,omitempty"`
+
+	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
+
+	DBSubnetGroupRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"dbSubnetGroupRef,omitempty"`
 	// Specifies whether this cluster can be deleted. If DeletionProtection is enabled,
 	// the cluster cannot be deleted unless it is modified and DeletionProtection
 	// is disabled. DeletionProtection protects clusters from being accidentally
 	// deleted.
+
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 	// DestinationRegion is used for presigning the request to a given region.
+
 	DestinationRegion *string `json:"destinationRegion,omitempty"`
 	// A list of log types that need to be enabled for exporting to Amazon CloudWatch
 	// Logs. You can enable audit logs or profiler logs. For more information, see
 	// Auditing Amazon DocumentDB Events (https://docs.aws.amazon.com/documentdb/latest/developerguide/event-auditing.html)
 	// and Profiling Amazon DocumentDB Operations (https://docs.aws.amazon.com/documentdb/latest/developerguide/profiling.html).
+
 	EnableCloudwatchLogsExports []*string `json:"enableCloudwatchLogsExports,omitempty"`
 	// The name of the database engine to be used for this cluster.
 	//
 	// Valid values: docdb
+
 	// +kubebuilder:validation:Required
+
 	Engine *string `json:"engine"`
 	// The version number of the database engine to use. The --engine-version will
 	// default to the latest major engine version. For production workloads, we
 	// recommend explicitly declaring this parameter with the intended major engine
 	// version.
+
 	EngineVersion *string `json:"engineVersion,omitempty"`
 	// The cluster identifier of the new global cluster.
+
 	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
 	// The KMS key identifier for an encrypted cluster.
 	//
@@ -93,33 +107,39 @@ type DBClusterSpec struct {
 	//
 	// If an encryption key is not specified in KmsKeyId:
 	//
-	//   - If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
-	//     default encryption key.
+	//    * If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
+	//    default encryption key.
 	//
 	// KMS creates the default encryption key for your Amazon Web Services account.
 	// Your Amazon Web Services account has a different default encryption key for
 	// each Amazon Web Services Regions.
-	KMSKeyID  *string                                  `json:"kmsKeyID,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
 	KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
 	// The password for the master database user. This password can contain any
 	// printable ASCII character except forward slash (/), double quote ("), or
 	// the "at" symbol (@).
 	//
 	// Constraints: Must contain from 8 to 100 characters.
+
 	MasterUserPassword *ackv1alpha1.SecretKeyReference `json:"masterUserPassword,omitempty"`
 	// The name of the master user for the cluster.
 	//
 	// Constraints:
 	//
-	//   - Must be from 1 to 63 letters or numbers.
+	//    * Must be from 1 to 63 letters or numbers.
 	//
-	//   - The first character must be a letter.
+	//    * The first character must be a letter.
 	//
-	//   - Cannot be a reserved word for the chosen database engine.
+	//    * Cannot be a reserved word for the chosen database engine.
+
 	MasterUsername *string `json:"masterUsername,omitempty"`
 	// The port number on which the instances in the cluster accept connections.
+
 	Port *int64 `json:"port,omitempty"`
 	// Not currently supported.
+
 	PreSignedURL *string `json:"preSignedURL,omitempty"`
 	// The daily time range during which automated backups are created if automated
 	// backups are enabled using the BackupRetentionPeriod parameter.
@@ -129,13 +149,14 @@ type DBClusterSpec struct {
 	//
 	// Constraints:
 	//
-	//   - Must be in the format hh24:mi-hh24:mi.
+	//    * Must be in the format hh24:mi-hh24:mi.
 	//
-	//   - Must be in Universal Coordinated Time (UTC).
+	//    * Must be in Universal Coordinated Time (UTC).
 	//
-	//   - Must not conflict with the preferred maintenance window.
+	//    * Must not conflict with the preferred maintenance window.
 	//
-	//   - Must be at least 30 minutes.
+	//    * Must be at least 30 minutes.
+
 	PreferredBackupWindow *string `json:"preferredBackupWindow,omitempty"`
 	// The weekly time range during which system maintenance can occur, in Universal
 	// Coordinated Time (UTC).
@@ -149,6 +170,7 @@ type DBClusterSpec struct {
 	// Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
 	//
 	// Constraints: Minimum 30-minute window.
+
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 	// The identifier for the snapshot or cluster snapshot to restore from.
 	//
@@ -157,31 +179,38 @@ type DBClusterSpec struct {
 	//
 	// Constraints:
 	//
-	//   - Must match the identifier of an existing snapshot.
+	//    * Must match the identifier of an existing snapshot.
+
 	SnapshotIdentifier *string `json:"snapshotIdentifier,omitempty"`
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
 	// have the same region as the source ARN.
+
 	SourceRegion *string `json:"sourceRegion,omitempty"`
 	// Specifies whether the cluster is encrypted.
+
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 	// The storage type to associate with the DB cluster.
 	//
 	// For information on storage types for Amazon DocumentDB clusters, see Cluster
 	// storage configurations in the Amazon DocumentDB Developer Guide.
 	//
-	// # Valid values for storage type - standard | iopt1
+	// Valid values for storage type - standard | iopt1
 	//
-	// # Default value is standard
+	// Default value is standard
 	//
 	// When you create a DocumentDB DB cluster with the storage type set to iopt1,
 	// the storage type is returned in the response. The storage type isn't returned
 	// when you set it to standard.
+
 	StorageType *string `json:"storageType,omitempty"`
 	// The tags to be assigned to the cluster.
+
 	Tags []*Tag `json:"tags,omitempty"`
 	// A list of EC2 VPC security groups to associate with this cluster.
-	VPCSecurityGroupIDs  []*string                                  `json:"vpcSecurityGroupIDs,omitempty"`
+
+	VPCSecurityGroupIDs []*string `json:"vpcSecurityGroupIDs,omitempty"`
+
 	VPCSecurityGroupRefs []*ackv1alpha1.AWSResourceReferenceWrapper `json:"vpcSecurityGroupRefs,omitempty"`
 }
 
@@ -192,7 +221,7 @@ type DBClusterStatus struct {
 	// constructed ARN for the resource
 	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
-	// All CRS managed by ACK have a common `Status.Conditions` member that
+	// All CRs managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource
