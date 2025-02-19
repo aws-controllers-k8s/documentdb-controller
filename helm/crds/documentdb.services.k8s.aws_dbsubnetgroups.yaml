@@ -43,19 +43,10 @@ spec:
               Detailed information about a subnet group.
             properties:
               description:
-                description: The description for the subnet group.
                 type: string
               name:
-                description: |-
-                  The name for the subnet group. This value is stored as a lowercase string.
-
-                  Constraints: Must contain no more than 255 letters, numbers, periods, underscores,
-                  spaces, or hyphens. Must not be default.
-
-                  Example: mySubnetgroup
                 type: string
               subnetIDs:
-                description: The Amazon EC2 subnet IDs for the subnet group.
                 items:
                   type: string
                 type: array
@@ -79,7 +70,6 @@ spec:
                   type: object
                 type: array
               tags:
-                description: The tags to be assigned to the subnet group.
                 items:
                   description: |-
                     Metadata assigned to an Amazon DocumentDB resource consisting of a key-value
@@ -129,7 +119,7 @@ spec:
                 type: object
               conditions:
                 description: |-
-                  All CRS managed by ACK have a common `Status.Conditions` member that
+                  All CRs managed by ACK have a common `Status.Conditions` member that
                   contains a collection of `ackv1alpha1.Condition` objects that describe
                   the various terminal states of the CR and its backend AWS service API
                   resource
