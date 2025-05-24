@@ -139,7 +139,10 @@ spec:
                   version.
                 type: string
               globalClusterIdentifier:
-                description: The cluster identifier of the new global cluster.
+                description: |-
+                  The cluster identifier of the new global cluster.
+
+                  Regex Pattern: `^[A-Za-z][0-9A-Za-z-:._]*$`
                 type: string
               kmsKeyID:
                 description: |-
