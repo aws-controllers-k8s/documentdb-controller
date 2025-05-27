@@ -83,6 +83,8 @@ type DBClusterSpec struct {
 	// version.
 	EngineVersion *string `json:"engineVersion,omitempty"`
 	// The cluster identifier of the new global cluster.
+	//
+	// Regex Pattern: `^[A-Za-z][0-9A-Za-z-:._]*$`
 	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
 	// The KMS key identifier for an encrypted cluster.
 	//
