@@ -90,10 +90,10 @@ class TestDBInstance:
         assert 'status' in cr
         assert 'dbInstanceStatus' in cr['status']
         assert cr['status']['dbInstanceStatus'] == 'creating'
-        condition.assert_not_synced(ref)
+        condition.assert_not_ready(ref)
 
         # Wait for the resource to get synced
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=MAX_WAIT_FOR_SYNCED_MINUTES)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=MAX_WAIT_FOR_SYNCED_MINUTES)
 
         # After the resource is synced, assert that DBInstanceStatus is available
         latest = db_instance.get(db_instance_id)
@@ -105,7 +105,7 @@ class TestDBInstance:
         assert 'status' in cr
         assert 'dbInstanceStatus' in cr['status']
         assert cr['status']['dbInstanceStatus'] != 'creating'
-        condition.assert_synced(ref)
+        condition.assert_ready(ref)
 
         latest = db_instance.get(db_instance_id)
         assert latest is not None
@@ -117,7 +117,7 @@ class TestDBInstance:
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
 
         # wait for the resource to get synced after the patch
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=MAX_WAIT_FOR_SYNCED_MINUTES)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=MAX_WAIT_FOR_SYNCED_MINUTES)
 
         # After resource is synced again, assert that patches are reflected in the AWS resource
         latest = db_instance.get(db_instance_id)
@@ -131,7 +131,7 @@ class TestDBInstance:
         time.sleep(MODIFY_WAIT_AFTER_SECONDS)
 
         # wait for the resource to get synced after the patch
-        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=MAX_WAIT_FOR_SYNCED_MINUTES)
+        assert k8s.wait_on_condition(ref, "Ready", "True", wait_periods=MAX_WAIT_FOR_SYNCED_MINUTES)
 
         # After resource is synced again, assert that patches are reflected in the AWS resource
         latest = db_instance.get(db_instance_id)
