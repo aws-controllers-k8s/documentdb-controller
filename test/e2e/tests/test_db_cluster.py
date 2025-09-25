@@ -72,7 +72,7 @@ def docdb_cluster(k8s_secret):
     assert 'status' in cr
     assert 'status' in cr['status']
     assert cr['status']['status'] == 'creating'
-    condition.assert_not_synced(ref)
+    condition.assert_not_ready(ref)
 
     yield (ref, cr, db_cluster_id)
 
@@ -112,7 +112,7 @@ class TestDBCluster:
         assert 'status' in cr
         assert 'status' in cr['status']
         assert cr['status']['status'] != 'creating'
-        condition.assert_synced(ref)
+        condition.assert_ready(ref)
 
         latest = db_cluster.get(db_cluster_id)
         assert latest is not None
