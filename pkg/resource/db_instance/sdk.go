@@ -881,6 +881,10 @@ func (rm *resourceManager) sdkUpdate(
 		input.CACertificateIdentifier = nil
 	}
 
+	if !delta.DifferentAt("Spec.AutoMinorVersionUpgrade") {
+		input.AutoMinorVersionUpgrade = nil
+	}
+
 	var resp *svcsdk.ModifyDBInstanceOutput
 	_ = resp
 	resp, err = rm.sdkapi.ModifyDBInstance(ctx, input)
