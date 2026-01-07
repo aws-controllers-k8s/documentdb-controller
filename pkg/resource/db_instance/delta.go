@@ -17,16 +17,15 @@ package db_instance
 
 import (
 	"bytes"
-	"reflect"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	acktags "github.com/aws-controllers-k8s/runtime/pkg/tags"
+	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 // Hack to avoid import errors during build...
 var (
 	_ = &bytes.Buffer{}
-	_ = &reflect.Method{}
 	_ = &acktags.Tags{}
 )
 
@@ -114,7 +113,7 @@ func newResourceDelta(
 			delta.Add("Spec.PerformanceInsightsKMSKeyID", a.ko.Spec.PerformanceInsightsKMSKeyID, b.ko.Spec.PerformanceInsightsKMSKeyID)
 		}
 	}
-	if !reflect.DeepEqual(a.ko.Spec.PerformanceInsightsKMSKeyRef, b.ko.Spec.PerformanceInsightsKMSKeyRef) {
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.PerformanceInsightsKMSKeyRef, b.ko.Spec.PerformanceInsightsKMSKeyRef) {
 		delta.Add("Spec.PerformanceInsightsKMSKeyRef", a.ko.Spec.PerformanceInsightsKMSKeyRef, b.ko.Spec.PerformanceInsightsKMSKeyRef)
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.PreferredMaintenanceWindow, b.ko.Spec.PreferredMaintenanceWindow) {
