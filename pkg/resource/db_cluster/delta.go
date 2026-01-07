@@ -17,16 +17,15 @@ package db_cluster
 
 import (
 	"bytes"
-	"reflect"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	acktags "github.com/aws-controllers-k8s/runtime/pkg/tags"
+	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 // Hack to avoid import errors during build...
 var (
 	_ = &bytes.Buffer{}
-	_ = &reflect.Method{}
 	_ = &acktags.Tags{}
 )
 
@@ -78,7 +77,7 @@ func newResourceDelta(
 			delta.Add("Spec.DBSubnetGroupName", a.ko.Spec.DBSubnetGroupName, b.ko.Spec.DBSubnetGroupName)
 		}
 	}
-	if !reflect.DeepEqual(a.ko.Spec.DBSubnetGroupRef, b.ko.Spec.DBSubnetGroupRef) {
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.DBSubnetGroupRef, b.ko.Spec.DBSubnetGroupRef) {
 		delta.Add("Spec.DBSubnetGroupRef", a.ko.Spec.DBSubnetGroupRef, b.ko.Spec.DBSubnetGroupRef)
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.DeletionProtection, b.ko.Spec.DeletionProtection) {
@@ -130,7 +129,7 @@ func newResourceDelta(
 			delta.Add("Spec.KMSKeyID", a.ko.Spec.KMSKeyID, b.ko.Spec.KMSKeyID)
 		}
 	}
-	if !reflect.DeepEqual(a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef) {
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef) {
 		delta.Add("Spec.KMSKeyRef", a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef)
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.MasterUserPassword, b.ko.Spec.MasterUserPassword) {
@@ -215,7 +214,7 @@ func newResourceDelta(
 			delta.Add("Spec.VPCSecurityGroupIDs", a.ko.Spec.VPCSecurityGroupIDs, b.ko.Spec.VPCSecurityGroupIDs)
 		}
 	}
-	if !reflect.DeepEqual(a.ko.Spec.VPCSecurityGroupRefs, b.ko.Spec.VPCSecurityGroupRefs) {
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.VPCSecurityGroupRefs, b.ko.Spec.VPCSecurityGroupRefs) {
 		delta.Add("Spec.VPCSecurityGroupRefs", a.ko.Spec.VPCSecurityGroupRefs, b.ko.Spec.VPCSecurityGroupRefs)
 	}
 
