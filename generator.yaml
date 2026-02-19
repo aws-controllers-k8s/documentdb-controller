@@ -100,11 +100,6 @@ resources:
           resource: Key
           service_name: kms
           path: Status.ACKResourceMetadata.ARN
-      MasterUserSecretKmsKeyId:
-        references:
-          resource: Key
-          service_name: kms
-          path: Status.ACKResourceMetadata.ARN
       # DBClusterParameterGroupName:
       #  references:
       #    resource: DBClusterParameterGroup
@@ -197,15 +192,6 @@ resources:
       #  references:
       #    resource: DBParameterGroup
       #    path: Spec.Name
-      DBSubnetGroupName:
-        references:
-          resource: DBSubnetGroup
-          path: Spec.Name
-      VpcSecurityGroupIds:
-        references:
-          resource: SecurityGroup
-          service_name: ec2
-          path: Status.ID
     renames:
       operations:
         CreateDBInstance:
