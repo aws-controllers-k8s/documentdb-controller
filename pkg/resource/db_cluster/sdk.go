@@ -214,6 +214,11 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Status.HostedZoneID = nil
 		}
+		if elem.IOOptimizedNextAllowedModificationTime != nil {
+			ko.Status.IOOptimizedNextAllowedModificationTime = &metav1.Time{*elem.IOOptimizedNextAllowedModificationTime}
+		} else {
+			ko.Status.IOOptimizedNextAllowedModificationTime = nil
+		}
 		if elem.KmsKeyId != nil {
 			ko.Spec.KMSKeyID = elem.KmsKeyId
 		} else {
@@ -224,6 +229,21 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Status.LatestRestorableTime = nil
 		}
+		if elem.MasterUserSecret != nil {
+			f21 := &svcapitypes.ClusterMasterUserSecret{}
+			if elem.MasterUserSecret.KmsKeyId != nil {
+				f21.KMSKeyID = elem.MasterUserSecret.KmsKeyId
+			}
+			if elem.MasterUserSecret.SecretArn != nil {
+				f21.SecretARN = elem.MasterUserSecret.SecretArn
+			}
+			if elem.MasterUserSecret.SecretStatus != nil {
+				f21.SecretStatus = elem.MasterUserSecret.SecretStatus
+			}
+			ko.Status.MasterUserSecret = f21
+		} else {
+			ko.Status.MasterUserSecret = nil
+		}
 		if elem.MasterUsername != nil {
 			ko.Spec.MasterUsername = elem.MasterUsername
 		} else {
@@ -233,6 +253,11 @@ func (rm *resourceManager) sdkFind(
 			ko.Status.MultiAZ = elem.MultiAZ
 		} else {
 			ko.Status.MultiAZ = nil
+		}
+		if elem.NetworkType != nil {
+			ko.Spec.NetworkType = elem.NetworkType
+		} else {
+			ko.Spec.NetworkType = nil
 		}
 		if elem.PercentProgress != nil {
 			ko.Status.PercentProgress = elem.PercentProgress
@@ -270,6 +295,18 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Status.ReplicationSourceIdentifier = nil
 		}
+		if elem.ServerlessV2ScalingConfiguration != nil {
+			f32 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+			if elem.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+				f32.MaxCapacity = elem.ServerlessV2ScalingConfiguration.MaxCapacity
+			}
+			if elem.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+				f32.MinCapacity = elem.ServerlessV2ScalingConfiguration.MinCapacity
+			}
+			ko.Spec.ServerlessV2ScalingConfiguration = f32
+		} else {
+			ko.Spec.ServerlessV2ScalingConfiguration = nil
+		}
 		if elem.Status != nil {
 			ko.Status.Status = elem.Status
 		} else {
@@ -286,18 +323,18 @@ func (rm *resourceManager) sdkFind(
 			ko.Spec.StorageType = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f32 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f32iter := range elem.VpcSecurityGroups {
-				f32elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f32iter.Status != nil {
-					f32elem.Status = f32iter.Status
+			f36 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f36iter := range elem.VpcSecurityGroups {
+				f36elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f36iter.Status != nil {
+					f36elem.Status = f36iter.Status
 				}
-				if f32iter.VpcSecurityGroupId != nil {
-					f32elem.VPCSecurityGroupID = f32iter.VpcSecurityGroupId
+				if f36iter.VpcSecurityGroupId != nil {
+					f36elem.VPCSecurityGroupID = f36iter.VpcSecurityGroupId
 				}
-				f32 = append(f32, f32elem)
+				f36 = append(f36, f36elem)
 			}
-			ko.Status.VPCSecurityGroups = f32
+			ko.Status.VPCSecurityGroups = f36
 		} else {
 			ko.Status.VPCSecurityGroups = nil
 		}
@@ -523,6 +560,11 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.HostedZoneID = nil
 	}
+	if resp.DBCluster.IOOptimizedNextAllowedModificationTime != nil {
+		ko.Status.IOOptimizedNextAllowedModificationTime = &metav1.Time{*resp.DBCluster.IOOptimizedNextAllowedModificationTime}
+	} else {
+		ko.Status.IOOptimizedNextAllowedModificationTime = nil
+	}
 	if resp.DBCluster.KmsKeyId != nil {
 		ko.Spec.KMSKeyID = resp.DBCluster.KmsKeyId
 	} else {
@@ -533,6 +575,21 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.LatestRestorableTime = nil
 	}
+	if resp.DBCluster.MasterUserSecret != nil {
+		f21 := &svcapitypes.ClusterMasterUserSecret{}
+		if resp.DBCluster.MasterUserSecret.KmsKeyId != nil {
+			f21.KMSKeyID = resp.DBCluster.MasterUserSecret.KmsKeyId
+		}
+		if resp.DBCluster.MasterUserSecret.SecretArn != nil {
+			f21.SecretARN = resp.DBCluster.MasterUserSecret.SecretArn
+		}
+		if resp.DBCluster.MasterUserSecret.SecretStatus != nil {
+			f21.SecretStatus = resp.DBCluster.MasterUserSecret.SecretStatus
+		}
+		ko.Status.MasterUserSecret = f21
+	} else {
+		ko.Status.MasterUserSecret = nil
+	}
 	if resp.DBCluster.MasterUsername != nil {
 		ko.Spec.MasterUsername = resp.DBCluster.MasterUsername
 	} else {
@@ -542,6 +599,11 @@ func (rm *resourceManager) sdkCreate(
 		ko.Status.MultiAZ = resp.DBCluster.MultiAZ
 	} else {
 		ko.Status.MultiAZ = nil
+	}
+	if resp.DBCluster.NetworkType != nil {
+		ko.Spec.NetworkType = resp.DBCluster.NetworkType
+	} else {
+		ko.Spec.NetworkType = nil
 	}
 	if resp.DBCluster.PercentProgress != nil {
 		ko.Status.PercentProgress = resp.DBCluster.PercentProgress
@@ -579,6 +641,18 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.ReplicationSourceIdentifier = nil
 	}
+	if resp.DBCluster.ServerlessV2ScalingConfiguration != nil {
+		f32 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+		if resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f32.MaxCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity
+		}
+		if resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f32.MinCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity
+		}
+		ko.Spec.ServerlessV2ScalingConfiguration = f32
+	} else {
+		ko.Spec.ServerlessV2ScalingConfiguration = nil
+	}
 	if resp.DBCluster.Status != nil {
 		ko.Status.Status = resp.DBCluster.Status
 	} else {
@@ -595,18 +669,18 @@ func (rm *resourceManager) sdkCreate(
 		ko.Spec.StorageType = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
-		f32 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f32iter := range resp.DBCluster.VpcSecurityGroups {
-			f32elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f32iter.Status != nil {
-				f32elem.Status = f32iter.Status
+		f36 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f36iter := range resp.DBCluster.VpcSecurityGroups {
+			f36elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f36iter.Status != nil {
+				f36elem.Status = f36iter.Status
 			}
-			if f32iter.VpcSecurityGroupId != nil {
-				f32elem.VPCSecurityGroupID = f32iter.VpcSecurityGroupId
+			if f36iter.VpcSecurityGroupId != nil {
+				f36elem.VPCSecurityGroupID = f36iter.VpcSecurityGroupId
 			}
-			f32 = append(f32, f32elem)
+			f36 = append(f36, f36elem)
 		}
-		ko.Status.VPCSecurityGroups = f32
+		ko.Status.VPCSecurityGroups = f36
 	} else {
 		ko.Status.VPCSecurityGroups = nil
 	}
@@ -671,6 +745,9 @@ func (rm *resourceManager) newCreateRequestPayload(
 	if r.ko.Spec.KMSKeyID != nil {
 		res.KmsKeyId = r.ko.Spec.KMSKeyID
 	}
+	if r.ko.Spec.ManageMasterUserPassword != nil {
+		res.ManageMasterUserPassword = r.ko.Spec.ManageMasterUserPassword
+	}
 	if r.ko.Spec.MasterUserPassword != nil {
 		tmpSecret, err := rm.rr.SecretValueFromReference(ctx, r.ko.Spec.MasterUserPassword)
 		if err != nil {
@@ -680,8 +757,14 @@ func (rm *resourceManager) newCreateRequestPayload(
 			res.MasterUserPassword = aws.String(tmpSecret)
 		}
 	}
+	if r.ko.Spec.MasterUserSecretKMSKeyID != nil {
+		res.MasterUserSecretKmsKeyId = r.ko.Spec.MasterUserSecretKMSKeyID
+	}
 	if r.ko.Spec.MasterUsername != nil {
 		res.MasterUsername = r.ko.Spec.MasterUsername
+	}
+	if r.ko.Spec.NetworkType != nil {
+		res.NetworkType = r.ko.Spec.NetworkType
 	}
 	if r.ko.Spec.Port != nil {
 		portCopy0 := *r.ko.Spec.Port
@@ -700,6 +783,16 @@ func (rm *resourceManager) newCreateRequestPayload(
 	if r.ko.Spec.PreferredMaintenanceWindow != nil {
 		res.PreferredMaintenanceWindow = r.ko.Spec.PreferredMaintenanceWindow
 	}
+	if r.ko.Spec.ServerlessV2ScalingConfiguration != nil {
+		f21 := &svcsdktypes.ServerlessV2ScalingConfiguration{}
+		if r.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f21.MaxCapacity = r.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity
+		}
+		if r.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f21.MinCapacity = r.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity
+		}
+		res.ServerlessV2ScalingConfiguration = f21
+	}
 	if r.ko.Spec.SourceRegion != nil {
 		res.SourceRegion = r.ko.Spec.SourceRegion
 	}
@@ -710,18 +803,18 @@ func (rm *resourceManager) newCreateRequestPayload(
 		res.StorageType = r.ko.Spec.StorageType
 	}
 	if r.ko.Spec.Tags != nil {
-		f21 := []svcsdktypes.Tag{}
-		for _, f21iter := range r.ko.Spec.Tags {
-			f21elem := &svcsdktypes.Tag{}
-			if f21iter.Key != nil {
-				f21elem.Key = f21iter.Key
+		f25 := []svcsdktypes.Tag{}
+		for _, f25iter := range r.ko.Spec.Tags {
+			f25elem := &svcsdktypes.Tag{}
+			if f25iter.Key != nil {
+				f25elem.Key = f25iter.Key
 			}
-			if f21iter.Value != nil {
-				f21elem.Value = f21iter.Value
+			if f25iter.Value != nil {
+				f25elem.Value = f25iter.Value
 			}
-			f21 = append(f21, *f21elem)
+			f25 = append(f25, *f25elem)
 		}
-		res.Tags = f21
+		res.Tags = f25
 	}
 	if r.ko.Spec.VPCSecurityGroupIDs != nil {
 		res.VpcSecurityGroupIds = aws.ToStringSlice(r.ko.Spec.VPCSecurityGroupIDs)
@@ -937,6 +1030,9 @@ func (rm *resourceManager) newRestoreDBClusterFromSnapshotInput(
 	if r.ko.Spec.KMSKeyID != nil {
 		res.KmsKeyId = r.ko.Spec.KMSKeyID
 	}
+	if r.ko.Spec.NetworkType != nil {
+		res.NetworkType = r.ko.Spec.NetworkType
+	}
 	if r.ko.Spec.Port != nil {
 		portCopy0 := *r.ko.Spec.Port
 		if portCopy0 > math.MaxInt32 || portCopy0 < math.MinInt32 {
@@ -945,6 +1041,16 @@ func (rm *resourceManager) newRestoreDBClusterFromSnapshotInput(
 		portCopy := int32(portCopy0)
 		res.Port = &portCopy
 	}
+	if r.ko.Spec.ServerlessV2ScalingConfiguration != nil {
+		resf11 := &svcsdktypes.ServerlessV2ScalingConfiguration{}
+		if r.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			resf11.MaxCapacity = r.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity
+		}
+		if r.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			resf11.MinCapacity = r.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity
+		}
+		res.ServerlessV2ScalingConfiguration = resf11
+	}
 	if r.ko.Spec.SnapshotIdentifier != nil {
 		res.SnapshotIdentifier = r.ko.Spec.SnapshotIdentifier
 	}
@@ -952,18 +1058,18 @@ func (rm *resourceManager) newRestoreDBClusterFromSnapshotInput(
 		res.StorageType = r.ko.Spec.StorageType
 	}
 	if r.ko.Spec.Tags != nil {
-		resf12 := []svcsdktypes.Tag{}
-		for _, resf12iter := range r.ko.Spec.Tags {
-			resf12elem := &svcsdktypes.Tag{}
-			if resf12iter.Key != nil {
-				resf12elem.Key = resf12iter.Key
+		resf14 := []svcsdktypes.Tag{}
+		for _, resf14iter := range r.ko.Spec.Tags {
+			resf14elem := &svcsdktypes.Tag{}
+			if resf14iter.Key != nil {
+				resf14elem.Key = resf14iter.Key
 			}
-			if resf12iter.Value != nil {
-				resf12elem.Value = resf12iter.Value
+			if resf14iter.Value != nil {
+				resf14elem.Value = resf14iter.Value
 			}
-			resf12 = append(resf12, *resf12elem)
+			resf14 = append(resf14, *resf14elem)
 		}
-		res.Tags = resf12
+		res.Tags = resf14
 	}
 	if r.ko.Spec.VPCSecurityGroupIDs != nil {
 		res.VpcSecurityGroupIds = aws.ToStringSlice(r.ko.Spec.VPCSecurityGroupIDs)
@@ -1101,6 +1207,11 @@ func (rm *resourceManager) setResourceFromRestoreDBClusterFromSnapshotOutput(
 	} else {
 		r.ko.Status.HostedZoneID = nil
 	}
+	if resp.DBCluster.IOOptimizedNextAllowedModificationTime != nil {
+		r.ko.Status.IOOptimizedNextAllowedModificationTime = &metav1.Time{*resp.DBCluster.IOOptimizedNextAllowedModificationTime}
+	} else {
+		r.ko.Status.IOOptimizedNextAllowedModificationTime = nil
+	}
 	if resp.DBCluster.KmsKeyId != nil {
 		r.ko.Spec.KMSKeyID = resp.DBCluster.KmsKeyId
 	} else {
@@ -1111,6 +1222,21 @@ func (rm *resourceManager) setResourceFromRestoreDBClusterFromSnapshotOutput(
 	} else {
 		r.ko.Status.LatestRestorableTime = nil
 	}
+	if resp.DBCluster.MasterUserSecret != nil {
+		f21 := &svcapitypes.ClusterMasterUserSecret{}
+		if resp.DBCluster.MasterUserSecret.KmsKeyId != nil {
+			f21.KMSKeyID = resp.DBCluster.MasterUserSecret.KmsKeyId
+		}
+		if resp.DBCluster.MasterUserSecret.SecretArn != nil {
+			f21.SecretARN = resp.DBCluster.MasterUserSecret.SecretArn
+		}
+		if resp.DBCluster.MasterUserSecret.SecretStatus != nil {
+			f21.SecretStatus = resp.DBCluster.MasterUserSecret.SecretStatus
+		}
+		r.ko.Status.MasterUserSecret = f21
+	} else {
+		r.ko.Status.MasterUserSecret = nil
+	}
 	if resp.DBCluster.MasterUsername != nil {
 		r.ko.Spec.MasterUsername = resp.DBCluster.MasterUsername
 	} else {
@@ -1120,6 +1246,11 @@ func (rm *resourceManager) setResourceFromRestoreDBClusterFromSnapshotOutput(
 		r.ko.Status.MultiAZ = resp.DBCluster.MultiAZ
 	} else {
 		r.ko.Status.MultiAZ = nil
+	}
+	if resp.DBCluster.NetworkType != nil {
+		r.ko.Spec.NetworkType = resp.DBCluster.NetworkType
+	} else {
+		r.ko.Spec.NetworkType = nil
 	}
 	if resp.DBCluster.PercentProgress != nil {
 		r.ko.Status.PercentProgress = resp.DBCluster.PercentProgress
@@ -1157,6 +1288,18 @@ func (rm *resourceManager) setResourceFromRestoreDBClusterFromSnapshotOutput(
 	} else {
 		r.ko.Status.ReplicationSourceIdentifier = nil
 	}
+	if resp.DBCluster.ServerlessV2ScalingConfiguration != nil {
+		f32 := &svcapitypes.ServerlessV2ScalingConfiguration{}
+		if resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			f32.MaxCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MaxCapacity
+		}
+		if resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			f32.MinCapacity = resp.DBCluster.ServerlessV2ScalingConfiguration.MinCapacity
+		}
+		r.ko.Spec.ServerlessV2ScalingConfiguration = f32
+	} else {
+		r.ko.Spec.ServerlessV2ScalingConfiguration = nil
+	}
 	if resp.DBCluster.Status != nil {
 		r.ko.Status.Status = resp.DBCluster.Status
 	} else {
@@ -1173,18 +1316,18 @@ func (rm *resourceManager) setResourceFromRestoreDBClusterFromSnapshotOutput(
 		r.ko.Spec.StorageType = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
-		f32 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f32iter := range resp.DBCluster.VpcSecurityGroups {
-			f32elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f32iter.Status != nil {
-				f32elem.Status = f32iter.Status
+		f36 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f36iter := range resp.DBCluster.VpcSecurityGroups {
+			f36elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f36iter.Status != nil {
+				f36elem.Status = f36iter.Status
 			}
-			if f32iter.VpcSecurityGroupId != nil {
-				f32elem.VPCSecurityGroupID = f32iter.VpcSecurityGroupId
+			if f36iter.VpcSecurityGroupId != nil {
+				f36elem.VPCSecurityGroupID = f36iter.VpcSecurityGroupId
 			}
-			f32 = append(f32, f32elem)
+			f36 = append(f36, f36elem)
 		}
-		r.ko.Status.VPCSecurityGroups = f32
+		r.ko.Status.VPCSecurityGroups = f36
 	} else {
 		r.ko.Status.VPCSecurityGroups = nil
 	}

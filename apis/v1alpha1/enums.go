@@ -22,6 +22,21 @@ const (
 	ApplyMethod_pending_reboot ApplyMethod = "pending-reboot"
 )
 
+type FailoverStatus string
+
+const (
+	FailoverStatus_cancelling   FailoverStatus = "cancelling"
+	FailoverStatus_failing_over FailoverStatus = "failing-over"
+	FailoverStatus_pending      FailoverStatus = "pending"
+)
+
+type GlobalClusterMemberSynchronizationStatus string
+
+const (
+	GlobalClusterMemberSynchronizationStatus_connected      GlobalClusterMemberSynchronizationStatus = "connected"
+	GlobalClusterMemberSynchronizationStatus_pending_resync GlobalClusterMemberSynchronizationStatus = "pending-resync"
+)
+
 type SourceType string
 
 const (

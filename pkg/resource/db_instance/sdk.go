@@ -192,6 +192,9 @@ func (rm *resourceManager) sdkFind(
 				}
 				f11.Subnets = f11f4
 			}
+			if elem.DBSubnetGroup.SupportedNetworkTypes != nil {
+				f11.SupportedNetworkTypes = aws.StringSlice(elem.DBSubnetGroup.SupportedNetworkTypes)
+			}
 			if elem.DBSubnetGroup.VpcId != nil {
 				f11.VPCID = elem.DBSubnetGroup.VpcId
 			}
@@ -557,6 +560,9 @@ func (rm *resourceManager) sdkCreate(
 				f11f4 = append(f11f4, f11f4elem)
 			}
 			f11.Subnets = f11f4
+		}
+		if resp.DBInstance.DBSubnetGroup.SupportedNetworkTypes != nil {
+			f11.SupportedNetworkTypes = aws.StringSlice(resp.DBInstance.DBSubnetGroup.SupportedNetworkTypes)
 		}
 		if resp.DBInstance.DBSubnetGroup.VpcId != nil {
 			f11.VPCID = resp.DBInstance.DBSubnetGroup.VpcId
@@ -995,6 +1001,9 @@ func (rm *resourceManager) sdkUpdate(
 				f11f4 = append(f11f4, f11f4elem)
 			}
 			f11.Subnets = f11f4
+		}
+		if resp.DBInstance.DBSubnetGroup.SupportedNetworkTypes != nil {
+			f11.SupportedNetworkTypes = aws.StringSlice(resp.DBInstance.DBSubnetGroup.SupportedNetworkTypes)
 		}
 		if resp.DBInstance.DBSubnetGroup.VpcId != nil {
 			f11.VPCID = resp.DBInstance.DBSubnetGroup.VpcId
