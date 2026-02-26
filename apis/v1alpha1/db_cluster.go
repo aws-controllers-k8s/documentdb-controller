@@ -132,7 +132,8 @@ type DBClusterSpec struct {
 	// There is a default KMS key for your Amazon Web Services account. Your Amazon
 	// Web Services account has a different default KMS key for each Amazon Web
 	// Services Region.
-	MasterUserSecretKMSKeyID *string `json:"masterUserSecretKMSKeyID,omitempty"`
+	MasterUserSecretKMSKeyID  *string                                  `json:"masterUserSecretKMSKeyID,omitempty"`
+	MasterUserSecretKMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"masterUserSecretKMSKeyRef,omitempty"`
 	// The name of the master user for the cluster.
 	//
 	// Constraints:

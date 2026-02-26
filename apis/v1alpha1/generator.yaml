@@ -95,6 +95,24 @@ resources:
         is_primary_key: true
       MasterUserPassword:
         is_secret: true
+      ManageMasterUserPassword:
+        late_initialize:
+          skip_incomplete_check: {}
+      MasterUserSecretKMSKeyID:
+        late_initialize:
+          skip_incomplete_check: {}
+        references:
+          resource: Key
+          service_name: kms
+          path: Status.ACKResourceMetadata.ARN
+      NetworkType:
+        late_initialize:
+          skip_incomplete_check: {}
+      ServerlessV2ScalingConfiguration:
+        late_initialize:
+            skip_incomplete_check: {}
+
+
       KmsKeyId:
         references:
           resource: Key
