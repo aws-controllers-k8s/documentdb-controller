@@ -158,3 +158,102 @@ class TestDBCluster:
             }
         ]
         assert latest_tags == after_update_expected_tags
+
+    def test_managed_password_transition(
+            self, docdb_cluster, k8s_secret,
+    ):
+        """Tests transitioning a DBCluster from using a MasterUserPassword
+        (sourced from a K8s Secret) to using ManageMasterUserPassword (AWS
+        Secrets Manager managed), and then back to MasterUserPassword.
+        """
+        ref, cr, db_cluster_id = docdb_cluster
+
+        # Wait for the cluster to become available after initial creation
+        # with MasterUserPassword from a K8s Secret.
+        db_cluster.wait_until(
+            db_cluster_id,
+            db_cluster.status_matches('available'),
+        )
+        time.sleep(CHECK_STATUS_WAIT_SECONDS)
+        assert k8s.wait_on_condition(ref, condition.CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=5)
+
+        # Verify the cluster was created without a managed secret
+        latest = db_cluster.get(db_cluster_id)
+        assert latest is not None
+        assert latest.get('MasterUserSecret') is None
+
+        # ------------------------------------------------------------------
+        # Transition to ManageMasterUserPassword = true
+        # Remove masterUserPassword and set manageMasterUserPassword: true
+        # ------------------------------------------------------------------
+        updates = {
+            "spec": {
+                "manageMasterUserPassword": True,
+                "masterUserPassword": None,
+            },
+        }
+        k8s.patch_custom_resource(ref, updates)
+
+        # Wait for the cluster to finish modifying and become available again
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        db_cluster.wait_until(
+            db_cluster_id,
+            db_cluster.status_matches('available'),
+        )
+        assert k8s.wait_on_condition(ref, condition.CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=5)
+
+
+        # Verify the CR status reflects the managed secret
+        cr = k8s.get_resource(ref)
+        assert cr is not None
+        assert 'status' in cr
+        assert cr['status'].get('masterUserSecret') is not None
+        assert cr['status']['masterUserSecret'].get('secretARN') is not None
+
+        # Verify AWS-side: MasterUserSecret should now be present
+        latest = db_cluster.get(db_cluster_id)
+        assert latest is not None
+        assert latest.get('MasterUserSecret') is not None
+        assert 'SecretArn' in latest['MasterUserSecret']
+
+        # ------------------------------------------------------------------
+        # Transition back to MasterUserPassword from a K8s Secret
+        # Set manageMasterUserPassword: false and provide masterUserPassword
+        # ------------------------------------------------------------------
+        new_secret = k8s_secret(
+            MUP_NS,
+            f"{MUP_SEC_NAME}-new",
+            MUP_SEC_KEY,
+            MUP_SEC_VAL,
+        )
+        updates = {
+            "spec": {
+                "manageMasterUserPassword": False,
+                "masterUserPassword": {
+                    "namespace": new_secret.ns,
+                    "name": new_secret.name,
+                    "key": new_secret.key,
+                },
+            },
+        }
+        k8s.patch_custom_resource(ref, updates)
+
+        # Wait for the cluster to finish modifying and become available again
+        time.sleep(MODIFY_WAIT_AFTER_SECONDS)
+        db_cluster.wait_until(
+            db_cluster_id,
+            db_cluster.status_matches('available'),
+        )
+        assert k8s.wait_on_condition(ref, condition.CONDITION_TYPE_RESOURCE_SYNCED, "True", wait_periods=5)
+
+        # Verify the CR status no longer has a managed secret
+        cr = k8s.get_resource(ref)
+        assert cr is not None
+        assert 'status' in cr
+        assert cr['status'].get('masterUserSecret') is None
+
+        # Verify AWS-side: MasterUserSecret should be gone
+        latest = db_cluster.get(db_cluster_id)
+        assert latest is not None
+        assert latest.get('MasterUserSecret') is None
+
