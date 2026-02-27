@@ -23,6 +23,12 @@
 		// resource with the value from the status.
 		ko.Spec.DBClusterParameterGroupName = ko.Status.DBClusterParameterGroup
 	}
+	// if DBCluster has a MasterUserSecret then the master user password is managed
+	if ko.Status.MasterUserSecret != nil {
+		ko.Spec.ManageMasterUserPassword = aws.Bool(true)
+	} else {
+		ko.Spec.ManageMasterUserPassword = aws.Bool(false)
+	}
 	if !clusterAvailable(&resource{ko}) {
 		// Setting resource synced condition to false will trigger a requeue of
 		// the resource. No need to return a requeue error here.
