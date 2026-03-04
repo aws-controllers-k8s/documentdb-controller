@@ -136,6 +136,11 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Status.Subnets = nil
 		}
+		if elem.SupportedNetworkTypes != nil {
+			ko.Status.SupportedNetworkTypes = aws.StringSlice(elem.SupportedNetworkTypes)
+		} else {
+			ko.Status.SupportedNetworkTypes = nil
+		}
 		if elem.VpcId != nil {
 			ko.Status.VPCID = elem.VpcId
 		} else {
@@ -266,6 +271,11 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.Subnets = nil
 	}
+	if resp.DBSubnetGroup.SupportedNetworkTypes != nil {
+		ko.Status.SupportedNetworkTypes = aws.StringSlice(resp.DBSubnetGroup.SupportedNetworkTypes)
+	} else {
+		ko.Status.SupportedNetworkTypes = nil
+	}
 	if resp.DBSubnetGroup.VpcId != nil {
 		ko.Status.VPCID = resp.DBSubnetGroup.VpcId
 	} else {
@@ -389,6 +399,11 @@ func (rm *resourceManager) sdkUpdate(
 		ko.Status.Subnets = f4
 	} else {
 		ko.Status.Subnets = nil
+	}
+	if resp.DBSubnetGroup.SupportedNetworkTypes != nil {
+		ko.Status.SupportedNetworkTypes = aws.StringSlice(resp.DBSubnetGroup.SupportedNetworkTypes)
+	} else {
+		ko.Status.SupportedNetworkTypes = nil
 	}
 	if resp.DBSubnetGroup.VpcId != nil {
 		ko.Status.VPCID = resp.DBSubnetGroup.VpcId

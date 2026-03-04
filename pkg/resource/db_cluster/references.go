@@ -35,6 +35,9 @@ import (
 // +kubebuilder:rbac:groups=kms.services.k8s.aws,resources=keys,verbs=get;list
 // +kubebuilder:rbac:groups=kms.services.k8s.aws,resources=keys/status,verbs=get;list
 
+// +kubebuilder:rbac:groups=kms.services.k8s.aws,resources=keys,verbs=get;list
+// +kubebuilder:rbac:groups=kms.services.k8s.aws,resources=keys/status,verbs=get;list
+
 // +kubebuilder:rbac:groups=ec2.services.k8s.aws,resources=securitygroups,verbs=get;list
 // +kubebuilder:rbac:groups=ec2.services.k8s.aws,resources=securitygroups/status,verbs=get;list
 
@@ -51,6 +54,10 @@ func (rm *resourceManager) ClearResolvedReferences(res acktypes.AWSResource) ack
 
 	if ko.Spec.KMSKeyRef != nil {
 		ko.Spec.KMSKeyID = nil
+	}
+
+	if ko.Spec.MasterUserSecretKMSKeyRef != nil {
+		ko.Spec.MasterUserSecretKMSKeyID = nil
 	}
 
 	if len(ko.Spec.VPCSecurityGroupRefs) > 0 {
@@ -88,6 +95,12 @@ func (rm *resourceManager) ResolveReferences(
 		resourceHasReferences = resourceHasReferences || fieldHasReferences
 	}
 
+	if fieldHasReferences, err := rm.resolveReferenceForMasterUserSecretKMSKeyID(ctx, apiReader, ko); err != nil {
+		return &resource{ko}, (resourceHasReferences || fieldHasReferences), err
+	} else {
+		resourceHasReferences = resourceHasReferences || fieldHasReferences
+	}
+
 	if fieldHasReferences, err := rm.resolveReferenceForVPCSecurityGroupIDs(ctx, apiReader, ko); err != nil {
 		return &resource{ko}, (resourceHasReferences || fieldHasReferences), err
 	} else {
@@ -107,6 +120,10 @@ func validateReferenceFields(ko *svcapitypes.DBCluster) error {
 
 	if ko.Spec.KMSKeyRef != nil && ko.Spec.KMSKeyID != nil {
 		return ackerr.ResourceReferenceAndIDNotSupportedFor("KMSKeyID", "KMSKeyRef")
+	}
+
+	if ko.Spec.MasterUserSecretKMSKeyRef != nil && ko.Spec.MasterUserSecretKMSKeyID != nil {
+		return ackerr.ResourceReferenceAndIDNotSupportedFor("MasterUserSecretKMSKeyID", "MasterUserSecretKMSKeyRef")
 	}
 
 	if len(ko.Spec.VPCSecurityGroupRefs) > 0 && len(ko.Spec.VPCSecurityGroupIDs) > 0 {
@@ -279,6 +296,35 @@ func getReferencedResourceState_Key(
 			"Status.ACKResourceMetadata.ARN")
 	}
 	return nil
+}
+
+// resolveReferenceForMasterUserSecretKMSKeyID reads the resource referenced
+// from MasterUserSecretKMSKeyRef field and sets the MasterUserSecretKMSKeyID
+// from referenced resource. Returns a boolean indicating whether a reference
+// contains references, or an error
+func (rm *resourceManager) resolveReferenceForMasterUserSecretKMSKeyID(
+	ctx context.Context,
+	apiReader client.Reader,
+	ko *svcapitypes.DBCluster,
+) (hasReferences bool, err error) {
+	if ko.Spec.MasterUserSecretKMSKeyRef != nil && ko.Spec.MasterUserSecretKMSKeyRef.From != nil {
+		hasReferences = true
+		arr := ko.Spec.MasterUserSecretKMSKeyRef.From
+		if arr.Name == nil || *arr.Name == "" {
+			return hasReferences, fmt.Errorf("provided resource reference is nil or empty: MasterUserSecretKMSKeyRef")
+		}
+		namespace := ko.ObjectMeta.GetNamespace()
+		if arr.Namespace != nil && *arr.Namespace != "" {
+			namespace = *arr.Namespace
+		}
+		obj := &kmsapitypes.Key{}
+		if err := getReferencedResourceState_Key(ctx, apiReader, obj, *arr.Name, namespace); err != nil {
+			return hasReferences, err
+		}
+		ko.Spec.MasterUserSecretKMSKeyID = (*string)(obj.Status.ACKResourceMetadata.ARN)
+	}
+
+	return hasReferences, nil
 }
 
 // resolveReferenceForVPCSecurityGroupIDs reads the resource referenced

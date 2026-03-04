@@ -65,6 +65,14 @@ type CloudwatchLogsExportConfiguration struct {
 	EnableLogTypes  []*string `json:"enableLogTypes,omitempty"`
 }
 
+// Contains the secret managed by Amazon DocumentDB in Amazon Web Services Secrets
+// Manager for the master user password.
+type ClusterMasterUserSecret struct {
+	KMSKeyID     *string `json:"kmsKeyID,omitempty"`
+	SecretARN    *string `json:"secretARN,omitempty"`
+	SecretStatus *string `json:"secretStatus,omitempty"`
+}
+
 // Contains information about an instance that is part of a cluster.
 type DBClusterMember struct {
 	DBClusterParameterGroupStatus *string `json:"dbClusterParameterGroupStatus,omitempty"`
@@ -126,39 +134,46 @@ type DBClusterSnapshotAttributesResult struct {
 
 // Detailed information about a cluster.
 type DBCluster_SDK struct {
-	AssociatedRoles              []*DBClusterRole              `json:"associatedRoles,omitempty"`
-	AvailabilityZones            []*string                     `json:"availabilityZones,omitempty"`
-	BackupRetentionPeriod        *int64                        `json:"backupRetentionPeriod,omitempty"`
-	CloneGroupID                 *string                       `json:"cloneGroupID,omitempty"`
-	ClusterCreateTime            *metav1.Time                  `json:"clusterCreateTime,omitempty"`
-	DBClusterARN                 *string                       `json:"dbClusterARN,omitempty"`
-	DBClusterIdentifier          *string                       `json:"dbClusterIdentifier,omitempty"`
-	DBClusterMembers             []*DBClusterMember            `json:"dbClusterMembers,omitempty"`
-	DBClusterParameterGroup      *string                       `json:"dbClusterParameterGroup,omitempty"`
-	DBSubnetGroup                *string                       `json:"dbSubnetGroup,omitempty"`
-	DBClusterResourceID          *string                       `json:"dbClusterResourceID,omitempty"`
-	DeletionProtection           *bool                         `json:"deletionProtection,omitempty"`
-	EarliestRestorableTime       *metav1.Time                  `json:"earliestRestorableTime,omitempty"`
-	EnabledCloudwatchLogsExports []*string                     `json:"enabledCloudwatchLogsExports,omitempty"`
-	Endpoint                     *string                       `json:"endpoint,omitempty"`
-	Engine                       *string                       `json:"engine,omitempty"`
-	EngineVersion                *string                       `json:"engineVersion,omitempty"`
-	HostedZoneID                 *string                       `json:"hostedZoneID,omitempty"`
-	KMSKeyID                     *string                       `json:"kmsKeyID,omitempty"`
-	LatestRestorableTime         *metav1.Time                  `json:"latestRestorableTime,omitempty"`
-	MasterUsername               *string                       `json:"masterUsername,omitempty"`
-	MultiAZ                      *bool                         `json:"multiAZ,omitempty"`
-	PercentProgress              *string                       `json:"percentProgress,omitempty"`
-	Port                         *int64                        `json:"port,omitempty"`
-	PreferredBackupWindow        *string                       `json:"preferredBackupWindow,omitempty"`
-	PreferredMaintenanceWindow   *string                       `json:"preferredMaintenanceWindow,omitempty"`
-	ReadReplicaIdentifiers       []*string                     `json:"readReplicaIdentifiers,omitempty"`
-	ReaderEndpoint               *string                       `json:"readerEndpoint,omitempty"`
-	ReplicationSourceIdentifier  *string                       `json:"replicationSourceIdentifier,omitempty"`
-	Status                       *string                       `json:"status,omitempty"`
-	StorageEncrypted             *bool                         `json:"storageEncrypted,omitempty"`
-	StorageType                  *string                       `json:"storageType,omitempty"`
-	VPCSecurityGroups            []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
+	AssociatedRoles                        []*DBClusterRole   `json:"associatedRoles,omitempty"`
+	AvailabilityZones                      []*string          `json:"availabilityZones,omitempty"`
+	BackupRetentionPeriod                  *int64             `json:"backupRetentionPeriod,omitempty"`
+	CloneGroupID                           *string            `json:"cloneGroupID,omitempty"`
+	ClusterCreateTime                      *metav1.Time       `json:"clusterCreateTime,omitempty"`
+	DBClusterARN                           *string            `json:"dbClusterARN,omitempty"`
+	DBClusterIdentifier                    *string            `json:"dbClusterIdentifier,omitempty"`
+	DBClusterMembers                       []*DBClusterMember `json:"dbClusterMembers,omitempty"`
+	DBClusterParameterGroup                *string            `json:"dbClusterParameterGroup,omitempty"`
+	DBSubnetGroup                          *string            `json:"dbSubnetGroup,omitempty"`
+	DBClusterResourceID                    *string            `json:"dbClusterResourceID,omitempty"`
+	DeletionProtection                     *bool              `json:"deletionProtection,omitempty"`
+	EarliestRestorableTime                 *metav1.Time       `json:"earliestRestorableTime,omitempty"`
+	EnabledCloudwatchLogsExports           []*string          `json:"enabledCloudwatchLogsExports,omitempty"`
+	Endpoint                               *string            `json:"endpoint,omitempty"`
+	Engine                                 *string            `json:"engine,omitempty"`
+	EngineVersion                          *string            `json:"engineVersion,omitempty"`
+	HostedZoneID                           *string            `json:"hostedZoneID,omitempty"`
+	IOOptimizedNextAllowedModificationTime *metav1.Time       `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
+	KMSKeyID                               *string            `json:"kmsKeyID,omitempty"`
+	LatestRestorableTime                   *metav1.Time       `json:"latestRestorableTime,omitempty"`
+	// Contains the secret managed by Amazon DocumentDB in Amazon Web Services Secrets
+	// Manager for the master user password.
+	MasterUserSecret            *ClusterMasterUserSecret `json:"masterUserSecret,omitempty"`
+	MasterUsername              *string                  `json:"masterUsername,omitempty"`
+	MultiAZ                     *bool                    `json:"multiAZ,omitempty"`
+	NetworkType                 *string                  `json:"networkType,omitempty"`
+	PercentProgress             *string                  `json:"percentProgress,omitempty"`
+	Port                        *int64                   `json:"port,omitempty"`
+	PreferredBackupWindow       *string                  `json:"preferredBackupWindow,omitempty"`
+	PreferredMaintenanceWindow  *string                  `json:"preferredMaintenanceWindow,omitempty"`
+	ReadReplicaIdentifiers      []*string                `json:"readReplicaIdentifiers,omitempty"`
+	ReaderEndpoint              *string                  `json:"readerEndpoint,omitempty"`
+	ReplicationSourceIdentifier *string                  `json:"replicationSourceIdentifier,omitempty"`
+	// Retrieves the scaling configuration for an Amazon DocumentDB Serverless cluster.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfigurationInfo `json:"serverlessV2ScalingConfiguration,omitempty"`
+	Status                           *string                               `json:"status,omitempty"`
+	StorageEncrypted                 *bool                                 `json:"storageEncrypted,omitempty"`
+	StorageType                      *string                               `json:"storageType,omitempty"`
+	VPCSecurityGroups                []*VPCSecurityGroupMembership         `json:"vpcSecurityGroups,omitempty"`
 }
 
 // Detailed information about an engine version.
@@ -233,6 +248,7 @@ type DBSubnetGroup_SDK struct {
 	DBSubnetGroupName        *string   `json:"dbSubnetGroupName,omitempty"`
 	SubnetGroupStatus        *string   `json:"subnetGroupStatus,omitempty"`
 	Subnets                  []*Subnet `json:"subnets,omitempty"`
+	SupportedNetworkTypes    []*string `json:"supportedNetworkTypes,omitempty"`
 	VPCID                    *string   `json:"vpcID,omitempty"`
 }
 
@@ -276,6 +292,15 @@ type EventSubscription struct {
 	SubscriptionCreationTime *string `json:"subscriptionCreationTime,omitempty"`
 }
 
+// Contains the state of scheduled or in-process operations on an Amazon DocumentDB
+// global cluster. This data type is empty unless a switchover or failover operation
+// is scheduled or is in progress on the global cluster.
+type FailoverState struct {
+	FromDBClusterARN  *string `json:"fromDBClusterARN,omitempty"`
+	IsDataLossAllowed *bool   `json:"isDataLossAllowed,omitempty"`
+	ToDBClusterARN    *string `json:"toDBClusterARN,omitempty"`
+}
+
 // A named set of filter values, used to return a more specific list of results.
 // You can use a filter to match a set of resources by specific criteria, such
 // as IDs.
@@ -297,6 +322,7 @@ type GlobalCluster struct {
 	GlobalClusterResourceID *string `json:"globalClusterResourceID,omitempty"`
 	Status                  *string `json:"status,omitempty"`
 	StorageEncrypted        *bool   `json:"storageEncrypted,omitempty"`
+	TagList                 []*Tag  `json:"tagList,omitempty"`
 }
 
 // A data structure with information about any primary and secondary clusters
@@ -370,6 +396,29 @@ type PendingModifiedValues struct {
 // Represents the output of ApplyPendingMaintenanceAction.
 type ResourcePendingMaintenanceActions struct {
 	ResourceIdentifier *string `json:"resourceIdentifier,omitempty"`
+}
+
+// Specifies any Amazon DocumentDB Serverless properties or limits that differ
+// between Amazon DocumentDB engine versions. You can test the values of this
+// attribute when deciding which Amazon DocumentDB version to use in a new or
+// upgraded cluster. You can also retrieve the version of an existing cluster
+// and check whether that version supports certain Amazon DocumentDB Serverless
+// features before you attempt to use those features.
+type ServerlessV2FeaturesSupport struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// Sets the scaling configuration of an Amazon DocumentDB Serverless cluster.
+type ServerlessV2ScalingConfiguration struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
+}
+
+// Retrieves the scaling configuration for an Amazon DocumentDB Serverless cluster.
+type ServerlessV2ScalingConfigurationInfo struct {
+	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
+	MinCapacity *float64 `json:"minCapacity,omitempty"`
 }
 
 // Detailed information about a subnet.

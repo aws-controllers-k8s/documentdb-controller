@@ -132,6 +132,13 @@ func newResourceDelta(
 	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef) {
 		delta.Add("Spec.KMSKeyRef", a.ko.Spec.KMSKeyRef, b.ko.Spec.KMSKeyRef)
 	}
+	if ackcompare.HasNilDifference(a.ko.Spec.ManageMasterUserPassword, b.ko.Spec.ManageMasterUserPassword) {
+		delta.Add("Spec.ManageMasterUserPassword", a.ko.Spec.ManageMasterUserPassword, b.ko.Spec.ManageMasterUserPassword)
+	} else if a.ko.Spec.ManageMasterUserPassword != nil && b.ko.Spec.ManageMasterUserPassword != nil {
+		if *a.ko.Spec.ManageMasterUserPassword != *b.ko.Spec.ManageMasterUserPassword {
+			delta.Add("Spec.ManageMasterUserPassword", a.ko.Spec.ManageMasterUserPassword, b.ko.Spec.ManageMasterUserPassword)
+		}
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.MasterUserPassword, b.ko.Spec.MasterUserPassword) {
 		delta.Add("Spec.MasterUserPassword", a.ko.Spec.MasterUserPassword, b.ko.Spec.MasterUserPassword)
 	} else if a.ko.Spec.MasterUserPassword != nil && b.ko.Spec.MasterUserPassword != nil {
@@ -139,11 +146,28 @@ func newResourceDelta(
 			delta.Add("Spec.MasterUserPassword", a.ko.Spec.MasterUserPassword, b.ko.Spec.MasterUserPassword)
 		}
 	}
+	if ackcompare.HasNilDifference(a.ko.Spec.MasterUserSecretKMSKeyID, b.ko.Spec.MasterUserSecretKMSKeyID) {
+		delta.Add("Spec.MasterUserSecretKMSKeyID", a.ko.Spec.MasterUserSecretKMSKeyID, b.ko.Spec.MasterUserSecretKMSKeyID)
+	} else if a.ko.Spec.MasterUserSecretKMSKeyID != nil && b.ko.Spec.MasterUserSecretKMSKeyID != nil {
+		if *a.ko.Spec.MasterUserSecretKMSKeyID != *b.ko.Spec.MasterUserSecretKMSKeyID {
+			delta.Add("Spec.MasterUserSecretKMSKeyID", a.ko.Spec.MasterUserSecretKMSKeyID, b.ko.Spec.MasterUserSecretKMSKeyID)
+		}
+	}
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.MasterUserSecretKMSKeyRef, b.ko.Spec.MasterUserSecretKMSKeyRef) {
+		delta.Add("Spec.MasterUserSecretKMSKeyRef", a.ko.Spec.MasterUserSecretKMSKeyRef, b.ko.Spec.MasterUserSecretKMSKeyRef)
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.MasterUsername, b.ko.Spec.MasterUsername) {
 		delta.Add("Spec.MasterUsername", a.ko.Spec.MasterUsername, b.ko.Spec.MasterUsername)
 	} else if a.ko.Spec.MasterUsername != nil && b.ko.Spec.MasterUsername != nil {
 		if *a.ko.Spec.MasterUsername != *b.ko.Spec.MasterUsername {
 			delta.Add("Spec.MasterUsername", a.ko.Spec.MasterUsername, b.ko.Spec.MasterUsername)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.NetworkType, b.ko.Spec.NetworkType) {
+		delta.Add("Spec.NetworkType", a.ko.Spec.NetworkType, b.ko.Spec.NetworkType)
+	} else if a.ko.Spec.NetworkType != nil && b.ko.Spec.NetworkType != nil {
+		if *a.ko.Spec.NetworkType != *b.ko.Spec.NetworkType {
+			delta.Add("Spec.NetworkType", a.ko.Spec.NetworkType, b.ko.Spec.NetworkType)
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.Port, b.ko.Spec.Port) {
@@ -172,6 +196,24 @@ func newResourceDelta(
 	} else if a.ko.Spec.PreferredMaintenanceWindow != nil && b.ko.Spec.PreferredMaintenanceWindow != nil {
 		if *a.ko.Spec.PreferredMaintenanceWindow != *b.ko.Spec.PreferredMaintenanceWindow {
 			delta.Add("Spec.PreferredMaintenanceWindow", a.ko.Spec.PreferredMaintenanceWindow, b.ko.Spec.PreferredMaintenanceWindow)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.ServerlessV2ScalingConfiguration, b.ko.Spec.ServerlessV2ScalingConfiguration) {
+		delta.Add("Spec.ServerlessV2ScalingConfiguration", a.ko.Spec.ServerlessV2ScalingConfiguration, b.ko.Spec.ServerlessV2ScalingConfiguration)
+	} else if a.ko.Spec.ServerlessV2ScalingConfiguration != nil && b.ko.Spec.ServerlessV2ScalingConfiguration != nil {
+		if ackcompare.HasNilDifference(a.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity, b.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity) {
+			delta.Add("Spec.ServerlessV2ScalingConfiguration.MaxCapacity", a.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity, b.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity)
+		} else if a.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity != nil && b.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity != nil {
+			if *a.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity != *b.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity {
+				delta.Add("Spec.ServerlessV2ScalingConfiguration.MaxCapacity", a.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity, b.ko.Spec.ServerlessV2ScalingConfiguration.MaxCapacity)
+			}
+		}
+		if ackcompare.HasNilDifference(a.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity, b.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity) {
+			delta.Add("Spec.ServerlessV2ScalingConfiguration.MinCapacity", a.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity, b.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity)
+		} else if a.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity != nil && b.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity != nil {
+			if *a.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity != *b.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity {
+				delta.Add("Spec.ServerlessV2ScalingConfiguration.MinCapacity", a.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity, b.ko.Spec.ServerlessV2ScalingConfiguration.MinCapacity)
+			}
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.SnapshotIdentifier, b.ko.Spec.SnapshotIdentifier) {

@@ -50,7 +50,7 @@ var (
 // +kubebuilder:rbac:groups=documentdb.services.k8s.aws,resources=dbclusters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=documentdb.services.k8s.aws,resources=dbclusters/status,verbs=get;update;patch
 
-var lateInitializeFieldNames = []string{}
+var lateInitializeFieldNames = []string{"ManageMasterUserPassword", "MasterUserSecretKMSKeyID", "NetworkType", "ServerlessV2ScalingConfiguration"}
 
 // resourceManager is responsible for providing a consistent way to perform
 // CRUD operations in a backend AWS service API for Book custom resources.
@@ -257,7 +257,21 @@ func (rm *resourceManager) lateInitializeFromReadOneOutput(
 	observed acktypes.AWSResource,
 	latest acktypes.AWSResource,
 ) acktypes.AWSResource {
-	return latest
+	observedKo := rm.concreteResource(observed).ko.DeepCopy()
+	latestKo := rm.concreteResource(latest).ko.DeepCopy()
+	if observedKo.Spec.ManageMasterUserPassword != nil && latestKo.Spec.ManageMasterUserPassword == nil {
+		latestKo.Spec.ManageMasterUserPassword = observedKo.Spec.ManageMasterUserPassword
+	}
+	if observedKo.Spec.MasterUserSecretKMSKeyID != nil && latestKo.Spec.MasterUserSecretKMSKeyID == nil {
+		latestKo.Spec.MasterUserSecretKMSKeyID = observedKo.Spec.MasterUserSecretKMSKeyID
+	}
+	if observedKo.Spec.NetworkType != nil && latestKo.Spec.NetworkType == nil {
+		latestKo.Spec.NetworkType = observedKo.Spec.NetworkType
+	}
+	if observedKo.Spec.ServerlessV2ScalingConfiguration != nil && latestKo.Spec.ServerlessV2ScalingConfiguration == nil {
+		latestKo.Spec.ServerlessV2ScalingConfiguration = observedKo.Spec.ServerlessV2ScalingConfiguration
+	}
+	return &resource{latestKo}
 }
 
 // IsSynced returns true if the resource is synced.

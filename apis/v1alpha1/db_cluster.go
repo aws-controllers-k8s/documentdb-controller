@@ -103,12 +103,37 @@ type DBClusterSpec struct {
 	// each Amazon Web Services Regions.
 	KMSKeyID  *string                                  `json:"kmsKeyID,omitempty"`
 	KMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"kmsKeyRef,omitempty"`
+	// Specifies whether to manage the master user password with Amazon Web Services
+	// Secrets Manager.
+	//
+	// Constraint: You can't manage the master user password with Amazon Web Services
+	// Secrets Manager if MasterUserPassword is specified.
+	ManageMasterUserPassword *bool `json:"manageMasterUserPassword,omitempty"`
 	// The password for the master database user. This password can contain any
 	// printable ASCII character except forward slash (/), double quote ("), or
 	// the "at" symbol (@).
 	//
 	// Constraints: Must contain from 8 to 100 characters.
 	MasterUserPassword *ackv1alpha1.SecretKeyReference `json:"masterUserPassword,omitempty"`
+	// The Amazon Web Services KMS key identifier to encrypt a secret that is automatically
+	// generated and managed in Amazon Web Services Secrets Manager. This setting
+	// is valid only if the master user password is managed by Amazon DocumentDB
+	// in Amazon Web Services Secrets Manager for the DB cluster.
+	//
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key. To use a KMS key in a different Amazon
+	// Web Services account, specify the key ARN or alias ARN.
+	//
+	// If you don't specify MasterUserSecretKmsKeyId, then the aws/secretsmanager
+	// KMS key is used to encrypt the secret. If the secret is in a different Amazon
+	// Web Services account, then you can't use the aws/secretsmanager KMS key to
+	// encrypt the secret, and you must use a customer managed KMS key.
+	//
+	// There is a default KMS key for your Amazon Web Services account. Your Amazon
+	// Web Services account has a different default KMS key for each Amazon Web
+	// Services Region.
+	MasterUserSecretKMSKeyID  *string                                  `json:"masterUserSecretKMSKeyID,omitempty"`
+	MasterUserSecretKMSKeyRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"masterUserSecretKMSKeyRef,omitempty"`
 	// The name of the master user for the cluster.
 	//
 	// Constraints:
@@ -119,6 +144,17 @@ type DBClusterSpec struct {
 	//
 	//   - Cannot be a reserved word for the chosen database engine.
 	MasterUsername *string `json:"masterUsername,omitempty"`
+	// The network type of the cluster.
+	//
+	// The network type is determined by the DBSubnetGroup specified for the cluster.
+	// A DBSubnetGroup can support only the IPv4 protocol or the IPv4 and the IPv6
+	// protocols (DUAL).
+	//
+	// For more information, see DocumentDB clusters in a VPC (https://docs.aws.amazon.com/documentdb/latest/developerguide/vpc-clusters.html)
+	// in the Amazon DocumentDB Developer Guide.
+	//
+	// Valid Values: IPV4 | DUAL
+	NetworkType *string `json:"networkType,omitempty"`
 	// The port number on which the instances in the cluster accept connections.
 	Port *int64 `json:"port,omitempty"`
 	// Not currently supported.
@@ -152,6 +188,8 @@ type DBClusterSpec struct {
 	//
 	// Constraints: Minimum 30-minute window.
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
+	// Contains the scaling configuration of an Amazon DocumentDB Serverless cluster.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `json:"serverlessV2ScalingConfiguration,omitempty"`
 	// The identifier for the snapshot or cluster snapshot to restore from.
 	//
 	// You can use either the name or the Amazon Resource Name (ARN) to specify
@@ -176,9 +214,9 @@ type DBClusterSpec struct {
 	//
 	// # Default value is standard
 	//
-	// When you create a DocumentDB DB cluster with the storage type set to iopt1,
-	// the storage type is returned in the response. The storage type isn't returned
-	// when you set it to standard.
+	// When you create an Amazon DocumentDB cluster with the storage type set to
+	// iopt1, the storage type is returned in the response. The storage type isn't
+	// returned when you set it to standard.
 	StorageType *string `json:"storageType,omitempty"`
 	// The tags to be assigned to the cluster.
 	Tags []*Tag `json:"tags,omitempty"`
@@ -242,10 +280,18 @@ type DBClusterStatus struct {
 	// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
 	// +kubebuilder:validation:Optional
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
+	// The next time you can modify the Amazon DocumentDB cluster to use the iopt1
+	// storage type.
+	// +kubebuilder:validation:Optional
+	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
 	// Specifies the latest time to which a database can be restored with point-in-time
 	// restore.
 	// +kubebuilder:validation:Optional
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
+	// The secret managed by Amazon DocumentDB in Amazon Web Services Secrets Manager
+	// for the master user password.
+	// +kubebuilder:validation:Optional
+	MasterUserSecret *ClusterMasterUserSecret `json:"masterUserSecret,omitempty"`
 	// Specifies whether the cluster has instances in multiple Availability Zones.
 	// +kubebuilder:validation:Optional
 	MultiAZ *bool `json:"multiAZ,omitempty"`

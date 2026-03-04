@@ -62,6 +62,14 @@ type DBSubnetGroupStatus struct {
 	// Detailed information about one or more subnets within a subnet group.
 	// +kubebuilder:validation:Optional
 	Subnets []*Subnet `json:"subnets,omitempty"`
+	// The network type of the DB subnet group.
+	//
+	// Valid Values: IPV4 | DUAL
+	//
+	// A DBSubnetGroup can support only the IPv4 protocol or the IPv4 and the IPv6
+	// protocols (DUAL).
+	// +kubebuilder:validation:Optional
+	SupportedNetworkTypes []*string `json:"supportedNetworkTypes,omitempty"`
 	// Provides the virtual private cloud (VPC) ID of the subnet group.
 	// +kubebuilder:validation:Optional
 	VPCID *string `json:"vpcID,omitempty"`
