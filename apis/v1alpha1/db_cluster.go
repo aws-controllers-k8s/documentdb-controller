@@ -35,17 +35,17 @@ type DBClusterSpec struct {
 	//
 	// Constraints:
 	//
-	//   - Must be a value from 1 to 35.
+	//    * Must be a value from 1 to 35.
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 	// The cluster identifier. This parameter is stored as a lowercase string.
 	//
 	// Constraints:
 	//
-	//   - Must contain from 1 to 63 letters, numbers, or hyphens.
+	//    * Must contain from 1 to 63 letters, numbers, or hyphens.
 	//
-	//   - The first character must be a letter.
+	//    * The first character must be a letter.
 	//
-	//   - Cannot end with a hyphen or contain two consecutive hyphens.
+	//    * Cannot end with a hyphen or contain two consecutive hyphens.
 	//
 	// Example: my-cluster
 	// +kubebuilder:validation:Required
@@ -95,8 +95,8 @@ type DBClusterSpec struct {
 	//
 	// If an encryption key is not specified in KmsKeyId:
 	//
-	//   - If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
-	//     default encryption key.
+	//    * If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
+	//    default encryption key.
 	//
 	// KMS creates the default encryption key for your Amazon Web Services account.
 	// Your Amazon Web Services account has a different default encryption key for
@@ -138,11 +138,11 @@ type DBClusterSpec struct {
 	//
 	// Constraints:
 	//
-	//   - Must be from 1 to 63 letters or numbers.
+	//    * Must be from 1 to 63 letters or numbers.
 	//
-	//   - The first character must be a letter.
+	//    * The first character must be a letter.
 	//
-	//   - Cannot be a reserved word for the chosen database engine.
+	//    * Cannot be a reserved word for the chosen database engine.
 	MasterUsername *string `json:"masterUsername,omitempty"`
 	// The network type of the cluster.
 	//
@@ -167,13 +167,13 @@ type DBClusterSpec struct {
 	//
 	// Constraints:
 	//
-	//   - Must be in the format hh24:mi-hh24:mi.
+	//    * Must be in the format hh24:mi-hh24:mi.
 	//
-	//   - Must be in Universal Coordinated Time (UTC).
+	//    * Must be in Universal Coordinated Time (UTC).
 	//
-	//   - Must not conflict with the preferred maintenance window.
+	//    * Must not conflict with the preferred maintenance window.
 	//
-	//   - Must be at least 30 minutes.
+	//    * Must be at least 30 minutes.
 	PreferredBackupWindow *string `json:"preferredBackupWindow,omitempty"`
 	// The weekly time range during which system maintenance can occur, in Universal
 	// Coordinated Time (UTC).
@@ -197,7 +197,7 @@ type DBClusterSpec struct {
 	//
 	// Constraints:
 	//
-	//   - Must match the identifier of an existing snapshot.
+	//    * Must match the identifier of an existing snapshot.
 	SnapshotIdentifier *string `json:"snapshotIdentifier,omitempty"`
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
@@ -210,9 +210,9 @@ type DBClusterSpec struct {
 	// For information on storage types for Amazon DocumentDB clusters, see Cluster
 	// storage configurations in the Amazon DocumentDB Developer Guide.
 	//
-	// # Valid values for storage type - standard | iopt1
+	// Valid values for storage type - standard | iopt1
 	//
-	// # Default value is standard
+	// Default value is standard
 	//
 	// When you create an Amazon DocumentDB cluster with the storage type set to
 	// iopt1, the storage type is returned in the response. The storage type isn't
