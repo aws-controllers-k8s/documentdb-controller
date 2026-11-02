@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	svcapitypes "github.com/aws-controllers-k8s/documentdb-controller/apis/v1alpha1"
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
@@ -24,8 +25,6 @@ import (
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	svcsdk "github.com/aws/aws-sdk-go-v2/service/docdb"
 	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/docdb/types"
-
-	"github.com/aws-controllers-k8s/documentdb-controller/pkg/util"
 )
 
 // NOTE(jaypipes): The below list is derived from looking at the RDS control
@@ -180,17 +179,27 @@ func (rm *resourceManager) syncTags(
 
 	arn := (*string)(latest.ko.Status.ACKResourceMetadata.ARN)
 
-	toAdd, toDelete := util.ComputeTagsDelta(
-		desired.ko.Spec.Tags, latest.ko.Spec.Tags,
-	)
+	from, _ := convertToOrderedACKTags(latest.ko.Spec.Tags)
+	to, toOrder := convertToOrderedACKTags(desired.ko.Spec.Tags)
+	added, _, removed := ackcompare.GetTagsDifference(from, to)
+	toAdd := fromACKTags(added, toOrder)
+	if len(toAdd) == 0 && len(removed) == 0 {
+		return nil
+	}
 
-	if len(toDelete) > 0 {
-		rlog.Debug("removing tags from instance", "tags", toDelete)
+	toDeleteKeys := make([]string, 0, len(removed))
+	for k := range removed {
+		toDeleteKeys = append(toDeleteKeys, k)
+	}
+	slices.Sort(toDeleteKeys)
+
+	if len(toDeleteKeys) > 0 {
+		rlog.Debug("removing tags from instance", "tags", toDeleteKeys)
 		_, err = rm.sdkapi.RemoveTagsFromResource(
 			ctx,
 			&svcsdk.RemoveTagsFromResourceInput{
 				ResourceName: arn,
-				TagKeys:      toDelete,
+				TagKeys:      toDeleteKeys,
 			},
 		)
 		rm.metrics.RecordAPICall("UPDATE", "RemoveTagsFromResource", err)
